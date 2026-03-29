@@ -1,0 +1,44 @@
+name: cyber-vulnerability-triage
+version: "1.0.0"
+description: Deterministic OpenEnv-style environment for HTTP vulnerability triage.
+entrypoint: env.environment.CyberVulnerabilityTriageEnvironment
+observation_space:
+  type: env.models.Observation
+  fields:
+    task: string
+    request_id: string
+    method: string
+    path: string
+    headers: object
+    query_params: object
+    body: string
+    source_ip: string
+    user_agent: string
+    instructions: string
+action_space:
+  type: env.models.Action
+  fields:
+    vulnerability_type:
+      enum: [safe, xss, sql_injection, command_injection, path_traversal]
+    severity:
+      enum: [none, low, medium, high, critical]
+    response_action:
+      enum: [allow, block, sanitize]
+    explanation: string
+reward_space:
+  type: env.models.Reward
+  fields:
+    score: float
+    vulnerability_score: float
+    severity_score: float
+    action_score: float
+    explanation_score: float
+    penalty: float
+tasks:
+  - name: easy
+    goal: Detect vulnerability type
+  - name: medium
+    goal: Detect vulnerability type and severity
+  - name: hard
+    goal: Detect vulnerability, severity, action, and explanation
+
