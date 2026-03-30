@@ -16,7 +16,11 @@ class MediumGrader(BaseGrader):
         feedback = (
             "Correct vulnerability type and severity."
             if score == 1.0
-            else "Partial credit awarded for vulnerability and severity classification."
+            else (
+                "Correct vulnerability type but incorrect severity."
+                if vulnerability and not severity
+                else "Incorrect vulnerability classification."
+            )
         )
         return score, {
             "vulnerability": vulnerability,
@@ -25,4 +29,3 @@ class MediumGrader(BaseGrader):
             "explanation": 0.0,
             "penalty": 0.0,
         }, feedback
-

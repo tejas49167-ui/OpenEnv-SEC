@@ -33,7 +33,7 @@ def main() -> None:
     overall_average = mean(result["average_score"] for result in results.values())
 
     print("Cybersecurity Web Vulnerability Triage Environment")
-    print("=" * 52)
+    print("-" * 52)
     for task in task_order:
         result = results[task]
         print(

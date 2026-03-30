@@ -12,7 +12,11 @@ class EasyGrader(BaseGrader):
     def grade(self, action: Action, example: RequestExample) -> Tuple[float, Dict[str, float], str]:
         vulnerability = 1.0 if action.vulnerability_type == example.vulnerability_type else 0.0
         score = vulnerability
-        feedback = "Correct vulnerability type." if vulnerability else "Incorrect vulnerability type."
+        feedback = (
+            f"Correct vulnerability detection for {example.request_id}."
+            if vulnerability
+            else f"Expected {example.vulnerability_type} but received {action.vulnerability_type}."
+        )
         return score, {
             "vulnerability": vulnerability,
             "severity": 0.0,
@@ -20,4 +24,3 @@ class EasyGrader(BaseGrader):
             "explanation": 0.0,
             "penalty": 0.0,
         }, feedback
-

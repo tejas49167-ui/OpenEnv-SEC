@@ -31,65 +31,49 @@ class BaselineTriageAgent:
         )
 
     def _heuristic_action(self, observation: Observation) -> Action:
-        haystack = " ".join(
+        raw_text = " ".join(
             [
                 observation.path,
                 json.dumps(observation.query_params, sort_keys=True),
                 observation.body,
-                json.dumps(observation.headers, sort_keys=True),
             ]
-        ).lower()
+        )
+        upper_text = raw_text.upper()
+        haystack = raw_text.lower()
 
-        if any(token in haystack for token in ["<script", "onerror=", "javascript:"]):
-            severity = "high" if "<script" in haystack else "medium"
-            explanation = (
-                "Reflected script payload suggests XSS and should be sanitized before rendering."
-                if "<script" in haystack
-                else "Stored HTML onerror payload suggests XSS and should be sanitized before storage."
-            )
+        if "<script" in haystack or "onerror=" in haystack:
             return Action(
                 vulnerability_type="xss",
-                severity=severity,
+                severity="high",
                 response_action="sanitize",
-                explanation=explanation,
+                explanation="Script content suggests XSS and should be sanitized.",
             )
-        if any(token in haystack for token in [" union select ", "' or '1'='1", "sqlmap", " or "]):
+        if " OR " in upper_text or "UNION SELECT" in upper_text:
             return Action(
                 vulnerability_type="sql_injection",
                 severity="critical",
                 response_action="block",
-                explanation="SQL injection payload suggests authentication bypass or exfiltration and should be blocked.",
+                explanation="Injection pattern suggests SQL injection and should be blocked.",
             )
-        if any(token in haystack for token in ["&&", ";", "|", "whoami", "/etc/passwd", "cat /etc/passwd"]):
-            severity = "critical" if "/etc/passwd" in haystack else "high"
-            explanation = (
-                "Shell separator payload targets passwd and indicates command injection against backend execution."
-                if severity == "critical"
-                else "Shell chaining with whoami indicates command injection against backend execution."
-            )
+        if ";" in raw_text:
             return Action(
                 vulnerability_type="command_injection",
-                severity=severity,
+                severity="high",
                 response_action="block",
-                explanation=explanation,
+                explanation="Command separator suggests command injection and should be blocked.",
             )
-        if any(token in haystack for token in ["../", "..%2f", "..\\"]):
-            encoded = "..%2f" in haystack
+        if "../" in haystack:
             return Action(
                 vulnerability_type="path_traversal",
-                severity="medium" if encoded else "high",
+                severity="high",
                 response_action="block",
-                explanation=(
-                    "Encoded traversal attempts to read log files outside the intended directory."
-                    if encoded
-                    else "Path traversal markers indicate access to sensitive files outside the intended directory."
-                ),
+                explanation="File path traversal markers suggest an injection attempt and should be blocked.",
             )
         return Action(
             vulnerability_type="safe",
             severity="none",
             response_action="allow",
-            explanation="This looks like a normal safe request with expected application behavior.",
+            explanation="This looks like a normal request and can be allowed.",
         )
 
     def _parse_response(self, content: str) -> Action:
