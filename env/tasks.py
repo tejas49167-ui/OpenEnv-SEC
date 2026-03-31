@@ -11,34 +11,43 @@ class TaskDefinition(BaseModel):
     name: TaskName
     description: str
     instructions: str
+    max_steps: int
+    required_artifacts_for_full_credit: int
 
 
 TASKS: Dict[TaskName, TaskDefinition] = {
     "easy": TaskDefinition(
         name="easy",
-        description="Detect the vulnerability type present in an HTTP request.",
+        description="Classify whether the request is safe or malicious and name the vulnerability family.",
         instructions=(
-            "Identify the request as one of: safe, xss, sql_injection, "
-            "command_injection, or path_traversal. Severity, action, and explanation "
-            "are ignored for task scoring, but you should still return valid fields."
+            "Investigate the alert and submit the most likely vulnerability type. "
+            "You should usually inspect the payload before deciding. Severity and "
+            "response action must still be valid, but grading focuses mostly on the "
+            "vulnerability decision and avoiding clearly unsafe triage."
         ),
+        max_steps=3,
+        required_artifacts_for_full_credit=1,
     ),
     "medium": TaskDefinition(
         name="medium",
-        description="Detect the vulnerability type and classify severity.",
+        description="Perform analyst triage with vulnerability classification and severity assessment.",
         instructions=(
-            "Identify the vulnerability type and severity. Valid severities are: "
-            "none, low, medium, high, critical. Action and explanation are ignored "
-            "for task scoring, but you should still return valid fields."
+            "Investigate the request, gather supporting evidence, and submit the "
+            "vulnerability type plus severity. Strong solutions inspect at least two "
+            "distinct sources of evidence before deciding."
         ),
+        max_steps=5,
+        required_artifacts_for_full_credit=2,
     ),
     "hard": TaskDefinition(
         name="hard",
-        description="Make a full triage decision including detection, severity, action, and explanation.",
+        description="Run a full alert-investigation workflow and choose the safest operational response.",
         instructions=(
-            "Return the vulnerability type, severity, the best response action "
-            "(allow, block, sanitize), and a short explanation grounded in the request."
+            "Act like a web security analyst. Use the available investigation tools, "
+            "corroborate the signal with context, then submit vulnerability type, "
+            "severity, response action, and a concise analyst explanation."
         ),
+        max_steps=6,
+        required_artifacts_for_full_credit=3,
     ),
 }
-

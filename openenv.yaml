@@ -1,12 +1,14 @@
 name: cyber-vulnerability-triage
-version: "1.0.0"
-description: Deterministic OpenEnv-style environment for HTTP vulnerability triage.
+version: "2.0.0"
+description: Multi-step OpenEnv environment for analyst-style cybersecurity alert triage.
 entrypoint: env.environment.CyberVulnerabilityTriageEnvironment
 observation_space:
   type: env.models.Observation
   fields:
     task: string
     request_id: string
+    queue: string
+    title: string
     method: string
     path: string
     headers: object
@@ -15,30 +17,51 @@ observation_space:
     source_ip: string
     user_agent: string
     instructions: string
+    steps_taken: integer
+    remaining_steps: integer
+    available_artifacts: array
+    collected_artifacts: array
+    evidence_log: array
+    available_action_types: array
+    allowed_vulnerabilities: array
+    allowed_severities: array
+    allowed_actions: array
 action_space:
   type: env.models.Action
   fields:
+    action_type:
+      enum:
+        [
+          inspect_payload,
+          decode_obfuscation,
+          review_history,
+          check_source_reputation,
+          inspect_asset_context,
+          consult_playbook,
+          submit_triage,
+        ]
     vulnerability_type:
-      enum: [safe, xss, sql_injection, command_injection, path_traversal]
+      enum: [safe, xss, sql_injection, command_injection, path_traversal, null]
     severity:
-      enum: [none, low, medium, high, critical]
+      enum: [none, low, medium, high, critical, null]
     response_action:
-      enum: [allow, block, sanitize]
+      enum: [allow, block, sanitize, monitor, null]
     explanation: string
 reward_space:
   type: env.models.Reward
   fields:
     score: float
-    vulnerability_score: float
-    severity_score: float
-    action_score: float
-    explanation_score: float
-    penalty: float
+    step_score: float
+    terminal_score: float
+    investigation_score: float
+    decision_score: float
+    efficiency_score: float
+    safety_penalty: float
+    feedback: string
 tasks:
   - name: easy
-    goal: Detect vulnerability type
+    goal: Determine whether the alert is benign or malicious and name the vulnerability family.
   - name: medium
-    goal: Detect vulnerability type and severity
+    goal: Investigate the alert and classify both vulnerability type and severity.
   - name: hard
-    goal: Detect vulnerability, severity, action, and explanation
-
+    goal: Complete full analyst triage with context gathering, severity, response action, and explanation.

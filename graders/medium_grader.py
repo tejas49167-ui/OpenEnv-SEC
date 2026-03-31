@@ -2,30 +2,36 @@ from __future__ import annotations
 
 from typing import Dict, Tuple
 
-from env.models import Action, RequestExample
+from env.models import Action, EnvironmentState, RequestExample
 from graders.base_grader import BaseGrader
 
 
 class MediumGrader(BaseGrader):
     name = "medium_grader"
+    task_name = "medium"
 
-    def grade(self, action: Action, example: RequestExample) -> Tuple[float, Dict[str, float], str]:
-        vulnerability = 0.5 if action.vulnerability_type == example.vulnerability_type else 0.0
-        severity = 0.5 if action.severity == example.severity else 0.0
-        score = vulnerability + severity
+    def grade(
+        self,
+        action: Action,
+        example: RequestExample,
+        state: EnvironmentState,
+    ) -> Tuple[float, Dict[str, float], str]:
+        vulnerability = 0.45 if action.vulnerability_type == example.vulnerability_type else 0.0
+        severity = 0.30 if action.severity == example.severity else 0.0
+        investigation = 0.15 * self.investigation_credit(example, state)
+        efficiency = 0.10 * self.efficiency_credit(state)
+        safety_penalty = 0.25 if example.vulnerability_type != "safe" and action.response_action == "allow" else 0.0
+        terminal = vulnerability + severity + investigation + efficiency
+        score = max(0.0, min(1.0, terminal - safety_penalty))
         feedback = (
-            "Correct vulnerability type and severity."
-            if score == 1.0
-            else (
-                "Correct vulnerability type but incorrect severity."
-                if vulnerability and not severity
-                else "Incorrect vulnerability classification."
-            )
+            f"Medium triage complete for {example.request_id}. "
+            f"severity_match={severity > 0}, artifacts={len(state.revealed_artifacts)}."
         )
         return score, {
-            "vulnerability": vulnerability,
-            "severity": severity,
-            "action": 0.0,
-            "explanation": 0.0,
-            "penalty": 0.0,
+            "step": 0.0,
+            "terminal": terminal,
+            "investigation": investigation,
+            "decision": vulnerability + severity,
+            "efficiency": efficiency,
+            "safety_penalty": safety_penalty,
         }, feedback
