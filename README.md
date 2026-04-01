@@ -1,162 +1,116 @@
-#                     Cyber OpenEnv: Web Alert Triage . 
+# Cyber OpenEnv (web alert triage)
 
-![Alt Text](https://wallpaperaccess.com/full/5996656.jpg)
+This project is like a practice lab for **web security alert triage**.
 
-This repo is a complete **OpenEnv-style environment** that simulates a real task a SOC/AppSec analyst does every day: **triaging suspicious HTTP requests**.
+In real companies, security people get alerts like “this HTTP request looks suspicious”.
+They don’t just say “attack / not attack” in one second.
+They look at the request, gather some clues, and then decide what to do (allow, block, sanitize, monitor).
 
-Instead of making a one-shot “XSS vs not-XSS” guess, an agent must **investigate** (payload, decoding, history, reputation, asset context, playbook) and then submit a **final operational decision**.
+This repo makes that whole workflow into an OpenEnv environment so an AI agent can learn it with the normal:
 
-## What you can do with it
+- `reset()` → start a new case
+- `step()` → do one investigation action, or submit final decision
+- `state()` → see internal progress
 
-- Train/evaluate agents on a **multi-step** security workflow.
-- Compare prompts/agents/models in a **deterministic** setting (same cases, same graders).
-- Measure not only correctness, but also **safety** (e.g., penalize “allow” on clearly malicious traffic) and **process** (evidence gathering).
+## What problem this solves (simple)
 
-## Environment API (reset / step / state)
+You want a place where you can test an agent on a real-ish security workflow:
 
-The core environment lives in `env/environment.py` and exposes:
+- agent gets an alert (HTTP request)
+- agent investigates step by step
+- agent submits: **what attack is it**, **how severe**, **what response action**
+- environment gives a score from **0.0 to 1.0**
 
-- `reset(task)` → starts a new alert case
-- `step(action)` → advances the investigation or submits a decision
-- `state()` → returns the internal state (episode counters, steps, etc.)
+So you can compare agents/prompts/models and see which one is actually better.
 
-An episode starts with an alert summary and raw request fields. Additional context is only revealed when the agent takes investigation actions.
+## How a single episode feels
 
-## Observation space
+Think of 1 episode as 1 suspicious request.
 
-The environment returns a typed Pydantic `Observation` (`env/models.py`). Key fields:
+At first you only see basic request info.
+Then the agent can do actions like:
 
-- **Task**: `task` (id) + `task_label` (human-readable)
-- **Request**: `request_id`, `queue`, `title`, `method`, `path`, `headers`, `query_params`, `body`, `source_ip`, `user_agent`
-- **Agent guidance**: `instructions`
-- **Progress**: `steps_taken`, `remaining_steps`
-- **Evidence bookkeeping**: `available_artifacts`, `collected_artifacts`, `evidence_log`
-- **Allowed values**: `available_action_types`, `allowed_vulnerabilities`, `allowed_severities`, `allowed_actions`
+- inspect payload (what user sent)
+- decode obfuscation (maybe it is encoded)
+- review history (did same IP do this before)
+- check IP reputation
+- inspect asset context (what app is this, is it sensitive)
+- consult playbook (internal guidance)
 
-## Action space
+Finally the agent does:
 
-Agents submit a typed Pydantic `Action` (`env/models.py`):
+- `submit_triage` (final answer)
 
-- `action_type`
-- `vulnerability_type` (nullable unless submitting)
-- `severity` (nullable unless submitting)
-- `response_action` (nullable unless submitting)
-- `explanation`
+## Tasks / difficulty
 
-Supported `action_type` values:
+The environment has 3 tasks in `env/tasks.py`:
 
-- `inspect_payload`
-- `decode_obfuscation`
-- `review_history`
-- `check_source_reputation`
-- `inspect_asset_context`
-- `consult_playbook`
-- `submit_triage`
+- **Easy (Quick classification)**: mostly “what kind of thing is this?” (safe / xss / sql_injection / command_injection / path_traversal)
+- **Medium (Severity + evidence)**: also decide severity (low/medium/high/critical) and show you did some investigation
+- **Hard (Full triage workflow)**: full analyst mode: investigate, decide vulnerability + severity + response action, and give a short explanation
 
-Supported vulnerability classes:
+You will see `task` (id) and `task_label` (human text) in observations.
 
-- `safe`
-- `xss`
-- `sql_injection`
-- `command_injection`
-- `path_traversal`
+## What the agent can output (Action)
 
-Supported response actions:
+Agent sends a Pydantic `Action` (`env/models.py`):
 
-- `allow`
-- `block`
-- `sanitize`
-- `monitor`
+- `action_type`: one of
+  - `inspect_payload`
+  - `decode_obfuscation`
+  - `review_history`
+  - `check_source_reputation`
+  - `inspect_asset_context`
+  - `consult_playbook`
+  - `submit_triage`
+- if it is `submit_triage`, then also send:
+  - `vulnerability_type`: `safe | xss | sql_injection | command_injection | path_traversal`
+  - `severity`: `none | low | medium | high | critical`
+  - `response_action`: `allow | block | sanitize | monitor`
+  - `explanation`: short text
 
-## Tasks (difficulty progression)
+## What the environment returns (Observation)
 
-Task definitions are in `env/tasks.py`.
+Observation is a typed Pydantic model (`env/models.py`).
+It includes stuff like:
 
-- **Easy (Quick classification)**: choose the most likely vulnerability family (grading focuses mainly on correct type + avoiding obviously unsafe calls)
-- **Medium (Severity + evidence)**: choose vulnerability type **and** severity; stronger solutions gather multiple pieces of evidence
-- **Hard (Full triage workflow)**: complete a full analyst-style flow and choose the safest operational response with a concise explanation
+- request fields: `method`, `path`, `headers`, `query_params`, `body`, `source_ip`, `user_agent`
+- instructions for the agent
+- steps taken / remaining
+- evidence log (what you already revealed)
+- what actions are allowed next
 
-## Dataset
+## Dataset (the cases)
 
-The environment ships with **12 deterministic cases** in `env/data.py`. Each case includes:
+There are **12 cases** in `env/data.py`.
+They cover:
 
-- raw HTTP request fields
-- ground truth vulnerability type + severity
-- recommended operational action
-- explanation keywords
-- “hidden” analyst artifacts revealed by investigation actions
+- XSS
+- SQL injection
+- command injection
+- path traversal
+- also “benign but looks scary” traffic
 
-## Reward shaping (why it’s not just a final grade)
+Each case has ground truth labels + hidden artifacts that only show up if you investigate.
 
-Rewards are designed to provide signal during the trajectory:
+## Reward + grading (why it’s useful)
 
-- investigation steps give positive reward when they reveal **new** evidence
-- “useful” investigation actions receive higher step reward
-- repeated inspections are penalized
-- terminal grading scores the final triage decision (and can apply **safety penalties**)
+This is not only “final answer correct = 1 else 0”.
 
-Reward/grading logic is implemented in `env/reward.py` and the task-specific graders.
+- When you investigate and reveal NEW evidence, you get some reward.
+- If you keep repeating the same investigation, you get penalized.
+- When you submit final triage, graders score it (0.0–1.0).
+- Unsafe decisions can get extra penalty (example: allowing a clearly malicious request).
 
-## Graders (deterministic, 0.0–1.0)
-
-Graders live in `graders/`:
+Graders are in `graders/` and are deterministic:
 
 - `graders/easy_grader.py`
 - `graders/medium_grader.py`
 - `graders/hard_grader.py`
 
-All graders are deterministic and produce a final score in the `[0.0, 1.0]` range.
+## Quick start (local)
 
-## Baseline agent + reproducible scores
-
-The baseline agent is in `agent/baseline_agent.py`.
-
-Run the baseline evaluation:
-
-```bash
-python inference.py
-```
-
-Example output (will be reproducible locally because cases + graders are deterministic):
-
-```text
-Easy (Quick classification)    episodes=12 avg=1.000 min=1.000 max=1.000 avg_steps=2.33
-Medium (Severity + evidence)   episodes=12 avg=0.927 min=0.865 max=0.940 avg_steps=4.33
-Hard (Full triage workflow)    episodes=12 avg=0.953 min=0.917 max=0.967 avg_steps=5.58
-OVERALL avg=0.960
-```
-
-### Optional: model-backed inference
-
-If you want the baseline agent to call a model endpoint (OpenAI-compatible), set:
-
-```bash
-export API_BASE_URL="https://your-openai-compatible-endpoint/v1"
-export MODEL_NAME="gpt-4o-mini"
-export HF_TOKEN="your-token"
-python inference.py
-```
-
-## HTTP API (FastAPI)
-
-The service is defined in `app.py`.
-
-Endpoints:
-
-- `GET /`
-- `GET /health`
-- `POST /reset`
-- `POST /step`
-- `GET /state`
-
-Quick demo:
-
-```bash
-curl http://localhost:7860/health
-curl -X POST http://localhost:7860/reset -H 'Content-Type: application/json' -d '{"task":"hard"}'
-```
-
-## Setup (local)
+Install:
 
 ```bash
 python -m venv .venv
@@ -164,10 +118,27 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Run the API server:
+Run baseline scoring:
+
+```bash
+python inference.py
+```
+
+## Run as an API (FastAPI)
+
+The server is in `app.py`.
+
+Run it:
 
 ```bash
 python -m uvicorn app:app --host 0.0.0.0 --port 7860
+```
+
+Try it:
+
+```bash
+curl http://localhost:7860/health
+curl -X POST http://localhost:7860/reset -H 'Content-Type: application/json' -d '{"task":"hard"}'
 ```
 
 ## Docker
@@ -178,35 +149,28 @@ Build:
 docker build -t cyber-openenv .
 ```
 
-Run:
+Run API:
 
 ```bash
 docker run --rm -p 7860:7860 cyber-openenv
 ```
 
-Run the baseline inside the container:
+Run baseline inside docker:
 
 ```bash
 docker run --rm cyber-openenv python inference.py
 ```
 
-## Design notes (why it’s structured this way)
-
-- **Determinism matters**: fixed cases + deterministic graders make it easy to compare agents fairly.
-- **Process matters**: the environment rewards evidence collection, not only the final label.
-- **Safety matters**: unsafe operational decisions can be penalized even if the label guess is close.
-
-## Project structure
+## Repo map
 
 ```text
 cyber-openenv/
-├── agent/
-├── env/
-├── graders/
-├── app.py
-├── inference.py
-├── openenv.yaml
+├── agent/        # baseline agent
+├── env/          # environment + models + tasks + reward
+├── graders/      # scoring logic for easy/medium/hard
+├── app.py        # FastAPI wrapper
+├── inference.py  # runs baseline + prints scores
+├── openenv.yaml  # OpenEnv metadata
 ├── Dockerfile
-├── requirements.txt
-└── README.md
+└── requirements.txt
 ```
