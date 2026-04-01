@@ -1,6 +1,6 @@
-# Cyber OpenEnv: Web Alert Triage
+#                     Cyber OpenEnv: Web Alert Triage
 
-![Alt Text](https://images.alphacoders.com/801/thumbbig-801761.webp)
+![Alt Text](https://wallpaperaccess.com/full/5996656.jpg)
 
 This repo is a complete **OpenEnv-style environment** that simulates a real task a SOC/AppSec analyst does every day: **triaging suspicious HTTP requests**.
 
