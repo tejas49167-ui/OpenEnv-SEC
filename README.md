@@ -1,5 +1,7 @@
 # Cyber OpenEnv (web alert triage)
 
+![Work hell](https://wallpaperaccess.com/full/5996656.jpg)
+
 This project is like a practice lab for **web security alert triage**.
 
 In real companies, security people get alerts like “this HTTP request looks suspicious”.
