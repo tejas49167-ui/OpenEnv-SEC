@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from env.environment import CyberVulnerabilityTriageEnvironment
+from env.models import TASK_LABELS
 from env.models import Action
 
 
@@ -23,7 +24,7 @@ def root() -> dict:
     return {
         "name": "cyber-vulnerability-triage",
         "status": "ok",
-        "tasks": ["easy", "medium", "hard"],
+        "tasks": [{"id": task_id, "label": TASK_LABELS[task_id]} for task_id in ["easy", "medium", "hard"]],
         "description": "Multi-step OpenEnv environment for cybersecurity alert triage.",
     }
 

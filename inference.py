@@ -5,6 +5,7 @@ from typing import Dict, List
 
 from agent.baseline_agent import BaselineTriageAgent
 from env.environment import CyberVulnerabilityTriageEnvironment
+from env.models import TASK_LABELS
 from env.models import TaskName
 
 
@@ -45,8 +46,9 @@ def main() -> None:
     print("-" * 52)
     for task in task_order:
         result = results[task]
+        label = TASK_LABELS[task]
         print(
-            f"{task.upper():<6} episodes={int(result['episodes'])} "
+            f"{label:<30} episodes={int(result['episodes'])} "
             f"avg={result['average_score']:.3f} "
             f"min={result['min_score']:.3f} max={result['max_score']:.3f} "
             f"avg_steps={result['average_steps']:.2f}"

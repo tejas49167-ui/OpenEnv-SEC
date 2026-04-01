@@ -32,6 +32,12 @@ ArtifactName = Literal[
     "playbook_guidance",
 ]
 
+TASK_LABELS: Dict[TaskName, str] = {
+    "easy": "Easy (Quick classification)",
+    "medium": "Medium (Severity + evidence)",
+    "hard": "Hard (Full triage workflow)",
+}
+
 
 class RequestExample(BaseModel):
     request_id: str
@@ -55,6 +61,7 @@ class RequestExample(BaseModel):
 
 class Observation(BaseModel):
     task: TaskName
+    task_label: str
     request_id: str
     queue: str
     title: str
@@ -111,6 +118,7 @@ class Reward(BaseModel):
 
 class StepInfo(BaseModel):
     task: TaskName
+    task_label: str
     request_id: str
     grader_name: str
     steps_taken: int

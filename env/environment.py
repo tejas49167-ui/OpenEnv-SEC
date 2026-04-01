@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Dict, Optional, Tuple
 
 from env.data import load_examples
-from env.models import Action, EnvironmentState, Observation, Reward, StepInfo, TaskName
+from env.models import TASK_LABELS, Action, EnvironmentState, Observation, Reward, StepInfo, TaskName
 from env.reward import GRADERS, compute_reward
 from env.tasks import TASKS
 
@@ -35,6 +35,7 @@ class CyberVulnerabilityTriageEnvironment:
         remaining = max(0, self._state.max_steps - self._state.steps_taken)
         return Observation(
             task=self._state.current_task,
+            task_label=TASK_LABELS[self._state.current_task],
             request_id=self._current_example.request_id,
             queue=self._current_example.queue,
             title=self._current_example.title,
@@ -129,6 +130,7 @@ class CyberVulnerabilityTriageEnvironment:
             return {}
         info = StepInfo(
             task=self._state.current_task,
+            task_label=TASK_LABELS[self._state.current_task],
             request_id=self._current_example.request_id,
             grader_name=GRADERS[self._state.current_task].name,
             steps_taken=self._state.steps_taken,
