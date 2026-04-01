@@ -1,5 +1,7 @@
 # Cyber OpenEnv: Web Alert Triage
 
+![Alt Text](https://images.alphacoders.com/801/thumbbig-801761.webp)
+
 This repo is a complete **OpenEnv-style environment** that simulates a real task a SOC/AppSec analyst does every day: **triaging suspicious HTTP requests**.
 
 Instead of making a one-shot “XSS vs not-XSS” guess, an agent must **investigate** (payload, decoding, history, reputation, asset context, playbook) and then submit a **final operational decision**.
