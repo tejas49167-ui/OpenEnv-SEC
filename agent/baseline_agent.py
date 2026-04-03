@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 from typing import Any, Dict, List, Optional
 
@@ -11,13 +10,9 @@ from env.models import Action, Observation
 
 
 class BaselineTriageAgent:
-    def __init__(self) -> None:
-        self.api_base_url = os.getenv("API_BASE_URL")
-        self.model_name = os.getenv("MODEL_NAME", "gpt-4o-mini")
-        self.hf_token = os.getenv("HF_TOKEN", "local-fallback-token")
-        self.client: Optional[OpenAI] = None
-        if self.api_base_url:
-            self.client = OpenAI(base_url=self.api_base_url, api_key=self.hf_token)
+    def __init__(self, client: Optional[OpenAI] = None, model_name: str = "gpt-4o-mini") -> None:
+        self.client = client
+        self.model_name = model_name
 
     def _prompt(self, observation: Observation) -> str:
         return (
