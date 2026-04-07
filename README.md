@@ -135,6 +135,16 @@ Run baseline scoring:
 python inference.py
 ```
 
+Required environment variables for LLM-backed inference:
+
+```bash
+export API_BASE_URL="https://router.huggingface.co/v1"
+export MODEL_NAME="gpt-4o-mini"
+export HF_TOKEN="your-token"
+```
+
+If `HF_TOKEN` is not set, the baseline falls back to a deterministic heuristic agent so local validation can still run end to end.
+
 ## Run as an API (FastAPI)
 
 The server is in `app.py`.
@@ -151,6 +161,8 @@ Try it:
 curl http://localhost:7860/health
 curl -X POST http://localhost:7860/reset -H 'Content-Type: application/json' -d '{"task":"hard"}'
 ```
+
+For deployment checks, `/health` should return `200`, and `POST /reset` should return the first typed observation payload for the requested task.
 
 ## Docker
 
@@ -171,6 +183,13 @@ Run baseline inside docker:
 ```bash
 docker run --rm cyber-openenv python inference.py
 ```
+
+## Submission notes
+
+- `inference.py` is in the repo root as required.
+- Stdout uses only structured `[START]`, `[STEP]`, and `[END]` logs for evaluator parsing.
+- The environment exposes three graded tasks: `easy`, `medium`, and `hard`.
+- Reward-bearing score components are clamped into the open interval `(0, 1)`.
 
 ## Repo map
 

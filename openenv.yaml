@@ -6,6 +6,7 @@ observation_space:
   type: env.models.Observation
   fields:
     task: string
+    task_label: string
     request_id: string
     queue: string
     title: string
