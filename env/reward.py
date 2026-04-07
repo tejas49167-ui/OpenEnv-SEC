@@ -13,15 +13,21 @@ GRADERS = {
     "hard": HardGrader(),
 }
 
+OPEN_INTERVAL_EPSILON = 0.001
+
+
+def clamp_open_unit_interval(value: float) -> float:
+    return max(OPEN_INTERVAL_EPSILON, min(1.0 - OPEN_INTERVAL_EPSILON, value))
+
 
 def compute_reward(task: TaskName, action: Action, example: RequestExample, state: EnvironmentState) -> Reward:
     grader = GRADERS[task]
     reward = grader.build_reward(action, example, state)
-    reward.score = max(0.0, min(1.0, reward.score))
-    reward.step_score = max(0.0, min(1.0, reward.step_score))
-    reward.terminal_score = max(0.0, min(1.0, reward.terminal_score))
-    reward.investigation_score = max(0.0, min(1.0, reward.investigation_score))
-    reward.decision_score = max(0.0, min(1.0, reward.decision_score))
-    reward.efficiency_score = max(0.0, min(1.0, reward.efficiency_score))
+    reward.score = clamp_open_unit_interval(reward.score)
+    reward.step_score = clamp_open_unit_interval(reward.step_score)
+    reward.terminal_score = clamp_open_unit_interval(reward.terminal_score)
+    reward.investigation_score = clamp_open_unit_interval(reward.investigation_score)
+    reward.decision_score = clamp_open_unit_interval(reward.decision_score)
+    reward.efficiency_score = clamp_open_unit_interval(reward.efficiency_score)
     reward.safety_penalty = max(0.0, min(1.0, reward.safety_penalty))
     return reward
