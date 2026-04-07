@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, Tuple
 
 from env.models import Action, EnvironmentState, RequestExample
+from env.scoring import clamp_open_unit_interval
 from graders.base_grader import BaseGrader
 
 
@@ -22,7 +23,7 @@ class MediumGrader(BaseGrader):
         efficiency = 0.10 * self.efficiency_credit(state)
         safety_penalty = 0.25 if example.vulnerability_type != "safe" and action.response_action == "allow" else 0.0
         terminal = vulnerability + severity + investigation + efficiency
-        score = max(0.0, min(1.0, terminal - safety_penalty))
+        score = clamp_open_unit_interval(terminal - safety_penalty)
         feedback = (
             f"Medium triage complete for {example.request_id}. "
             f"severity_match={severity > 0}, artifacts={len(state.revealed_artifacts)}."

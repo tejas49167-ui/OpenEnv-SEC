@@ -5,6 +5,7 @@ from typing import Dict, Optional, Tuple
 from env.data import load_examples
 from env.models import TASK_LABELS, Action, EnvironmentState, Observation, Reward, StepInfo, TaskName
 from env.reward import GRADERS, compute_reward
+from env.scoring import clamp_open_unit_interval
 from env.tasks import TASKS
 
 
@@ -86,12 +87,12 @@ class CyberVulnerabilityTriageEnvironment:
         artifact_name = ACTION_TO_ARTIFACT[action_type]
         if artifact_name in self._state.revealed_artifacts:
             return Reward(
-                score=0.0,
-                step_score=0.0,
-                terminal_score=0.0,
-                investigation_score=0.0,
-                decision_score=0.0,
-                efficiency_score=0.0,
+                score=clamp_open_unit_interval(0.0),
+                step_score=clamp_open_unit_interval(0.0),
+                terminal_score=clamp_open_unit_interval(0.0),
+                investigation_score=clamp_open_unit_interval(0.0),
+                decision_score=clamp_open_unit_interval(0.0),
+                efficiency_score=clamp_open_unit_interval(0.0),
                 safety_penalty=0.02,
                 feedback=f"{artifact_name} was already reviewed; repeated inspection adds no value.",
             )
@@ -103,24 +104,24 @@ class CyberVulnerabilityTriageEnvironment:
         useful = action_type in self._current_example.useful_actions
         step_score = 0.12 if useful else 0.05
         return Reward(
-            score=step_score,
-            step_score=step_score,
-            terminal_score=0.0,
-            investigation_score=step_score,
-            decision_score=0.0,
-            efficiency_score=0.0,
+            score=clamp_open_unit_interval(step_score),
+            step_score=clamp_open_unit_interval(step_score),
+            terminal_score=clamp_open_unit_interval(0.0),
+            investigation_score=clamp_open_unit_interval(step_score),
+            decision_score=clamp_open_unit_interval(0.0),
+            efficiency_score=clamp_open_unit_interval(0.0),
             safety_penalty=0.0,
             feedback=f"Reviewed {artifact_name}. Added analyst evidence to the case file.",
         )
 
     def _timeout_reward(self) -> Reward:
         return Reward(
-            score=0.0,
-            step_score=0.0,
-            terminal_score=0.0,
-            investigation_score=0.0,
-            decision_score=0.0,
-            efficiency_score=0.0,
+            score=clamp_open_unit_interval(0.0),
+            step_score=clamp_open_unit_interval(0.0),
+            terminal_score=clamp_open_unit_interval(0.0),
+            investigation_score=clamp_open_unit_interval(0.0),
+            decision_score=clamp_open_unit_interval(0.0),
+            efficiency_score=clamp_open_unit_interval(0.0),
             safety_penalty=0.25,
             feedback="Episode ended before a triage decision was submitted.",
         )
