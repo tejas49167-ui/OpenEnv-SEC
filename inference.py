@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from statistics import mean
 from typing import Dict, List, Optional
@@ -25,16 +26,55 @@ def build_client() -> Optional[OpenAI]:
     return OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
 
+def emit_block(block_type: str, **fields: object) -> None:
+    serialized_fields = " ".join(
+        f"{key}={serialize_field(value)}" for key, value in fields.items()
+    )
+    print(f"[{block_type}] {serialized_fields}", flush=True)
+
+
+def serialize_field(value: object) -> str:
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, (int, float)):
+        return str(value)
+    text = str(value)
+    if any(character.isspace() for character in text):
+        return json.dumps(text)
+    return text
+
+
 def log_start(task: TaskName, episode: int, total_episodes: int) -> None:
-    print(f"START task={task} task_label={TASK_LABELS[task]!r} episode={episode}/{total_episodes}")
+    emit_block(
+        "START",
+        task=task,
+        task_label=TASK_LABELS[task],
+        episode=episode,
+        total_episodes=total_episodes,
+    )
 
 
-def log_step(task: TaskName, episode: int, step: int, action_type: str) -> None:
-    print(f"STEP task={task} episode={episode} step={step} action_type={action_type}")
+def log_step(
+    task: TaskName,
+    episode: int,
+    step: int,
+    action_type: str,
+    reward: float,
+    done: bool,
+) -> None:
+    emit_block(
+        "STEP",
+        task=task,
+        episode=episode,
+        step=step,
+        action_type=action_type,
+        reward=f"{reward:.3f}",
+        done=done,
+    )
 
 
 def log_end(task: TaskName, episode: int, score: float, steps_taken: int) -> None:
-    print(f"END task={task} episode={episode} score={score:.3f} steps={steps_taken}")
+    emit_block("END", task=task, episode=episode, score=f"{score:.3f}", steps=steps_taken)
 
 
 def run_task(
@@ -57,8 +97,8 @@ def run_task(
         while not done:
             action = agent.decide(observation)
             next_step = env.state().steps_taken + 1
-            log_step(task, episode, next_step, action.action_type)
             observation, reward, done, _ = env.step(action)
+            log_step(task, episode, next_step, action.action_type, reward.score, done)
 
         assert reward is not None
         steps_taken = env.state().steps_taken
@@ -81,17 +121,17 @@ def main() -> None:
     results = {task: run_task(task, client, MODEL_NAME) for task in task_order}
     overall_average = mean(result["average_score"] for result in results.values())
 
-    print(f"END summary overall_average={overall_average:.3f}")
+    emit_block("END", task="summary", score=f"{overall_average:.3f}", steps=0)
     for task in task_order:
         result = results[task]
-        print(
-            "END "
-            f"task={task} "
-            f"episodes={int(result['episodes'])} "
-            f"average_score={result['average_score']:.3f} "
-            f"min_score={result['min_score']:.3f} "
-            f"max_score={result['max_score']:.3f} "
-            f"average_steps={result['average_steps']:.2f}"
+        emit_block(
+            "END",
+            task=task,
+            episodes=int(result["episodes"]),
+            average_score=f"{result['average_score']:.3f}",
+            min_score=f"{result['min_score']:.3f}",
+            max_score=f"{result['max_score']:.3f}",
+            average_steps=f"{result['average_steps']:.2f}",
         )
 
 
