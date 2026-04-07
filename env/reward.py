@@ -5,6 +5,7 @@ from graders.hard_grader import HardGrader
 from graders.medium_grader import MediumGrader
 
 from env.models import Action, EnvironmentState, RequestExample, Reward, TaskName
+from env.scoring import clamp_open_unit_interval
 
 
 GRADERS = {
@@ -12,12 +13,6 @@ GRADERS = {
     "medium": MediumGrader(),
     "hard": HardGrader(),
 }
-
-OPEN_INTERVAL_EPSILON = 0.001
-
-
-def clamp_open_unit_interval(value: float) -> float:
-    return max(OPEN_INTERVAL_EPSILON, min(1.0 - OPEN_INTERVAL_EPSILON, value))
 
 
 def compute_reward(task: TaskName, action: Action, example: RequestExample, state: EnvironmentState) -> Reward:

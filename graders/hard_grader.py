@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, Tuple
 
 from env.models import Action, EnvironmentState, RequestExample
+from env.scoring import clamp_open_unit_interval
 from graders.base_grader import BaseGrader
 
 
@@ -32,7 +33,7 @@ class HardGrader(BaseGrader):
             safety_penalty += 0.05
 
         terminal = vulnerability + severity + response_action + investigation + explanation + efficiency
-        score = max(0.0, min(1.0, terminal - safety_penalty))
+        score = clamp_open_unit_interval(terminal - safety_penalty)
         feedback = (
             f"Hard triage complete for {example.request_id}. "
             f"response_match={response_action > 0}, explanation_credit={explanation:.2f}."

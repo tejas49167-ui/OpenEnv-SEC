@@ -4,7 +4,8 @@ from typing import Dict, Optional, Tuple
 
 from env.data import load_examples
 from env.models import TASK_LABELS, Action, EnvironmentState, Observation, Reward, StepInfo, TaskName
-from env.reward import GRADERS, clamp_open_unit_interval, compute_reward
+from env.reward import GRADERS, compute_reward
+from env.scoring import clamp_open_unit_interval
 from env.tasks import TASKS
 
 
