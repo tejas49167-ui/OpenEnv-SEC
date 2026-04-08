@@ -22,7 +22,7 @@ You want a place where you can test an agent on a real-ish security workflow:
 - agent gets an alert (HTTP request)
 - agent investigates step by step
 - agent submits: **what attack is it**, **how severe**, **what response action**
-- environment gives a score from **0.0 to 1.0**
+- environment gives a score between **0.0 to 1.0**(excluding 0.0 and 1.0)
 
 So you can compare agents/prompts/models and see which one is actually better.
 
