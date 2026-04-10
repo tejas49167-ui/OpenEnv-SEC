@@ -3,13 +3,12 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "openenv-sec"
-version = "2.0.0"
+name = "openenv-cyber-vulnerability-triage"
+version = "2.1.0"
 description = "Multi-step OpenEnv environment for cybersecurity alert triage."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "openenv-core>=0.2.0",
   "pydantic>=2.7,<3",
   "openai>=2.7.2,<3",
   "PyYAML>=6.0,<7",
@@ -17,8 +16,30 @@ dependencies = [
   "uvicorn>=0.30,<1",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-cov>=4.0.0",
+  "ruff>=0.6.0",
+]
+openenv = [
+  "openenv-core>=0.2.2",
+]
+openenv-core = [
+  "openenv-core[core]>=0.2.2",
+]
+
 [project.scripts]
+# OpenEnv-style alias (same idea as echo_env’s `server` console script)
 server = "server.app:main"
+cyber-triage-server = "server.app:main"
+cyber-triage-eval = "inference:main"
 
 [tool.setuptools]
-packages = ["agent", "env", "graders", "server"]
+include-package-data = true
+packages = [
+  "agent",
+  "env",
+  "graders",
+  "server",
+]

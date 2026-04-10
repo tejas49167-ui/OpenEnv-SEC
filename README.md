@@ -1,7 +1,15 @@
-
+---
+title: OpenEnv Sec
+emoji: 🔍
+colorFrom: gray
+colorTo: green
+sdk: docker
+pinned: false
+short_description: env tests ai agent on alert triage
+---
 # Cyber OpenEnv (web alert triage)
 
-![Work hell](https://wallpaperaccess.com/full/5996656.jpg)
+
 
 This project is like a practice lab for **web security alert triage**.
 
@@ -22,7 +30,7 @@ You want a place where you can test an agent on a real-ish security workflow:
 - agent gets an alert (HTTP request)
 - agent investigates step by step
 - agent submits: **what attack is it**, **how severe**, **what response action**
-- environment gives a score between **0.0 to 1.0**(excluding 0.0 and 1.0)
+- environment gives a score from **0.0 to 1.0**
 
 So you can compare agents/prompts/models and see which one is actually better.
 
@@ -139,19 +147,19 @@ If `HF_TOKEN` is not set, the baseline falls back to a deterministic heuristic a
 
 ## Run as an API (FastAPI)
 
-The server is in `app.py`.
+The canonical OpenEnv server entrypoint is `server/app.py`.
 
 Run it:
 
 ```bash
-python -m uvicorn app:app --host 0.0.0.0 --port 7860
+python -m uvicorn server.app:app --host 0.0.0.0 --port 8000
 ```
 
 Try it:
 
 ```bash
-curl http://localhost:7860/health
-curl -X POST http://localhost:7860/reset -H 'Content-Type: application/json' -d '{"task":"hard"}'
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/reset -H 'Content-Type: application/json' -d '{"task":"hard"}'
 ```
 
 For deployment checks, `/health` should return `200`, and `POST /reset` should return the first typed observation payload for the requested task.
@@ -167,7 +175,7 @@ docker build -t cyber-openenv .
 Run API:
 
 ```bash
-docker run --rm -p 7860:7860 cyber-openenv
+docker run --rm -p 8000:8000 cyber-openenv
 ```
 
 Run baseline inside docker:
@@ -180,6 +188,7 @@ docker run --rm cyber-openenv python inference.py
 
 - `inference.py` is in the repo root as required.
 - Stdout uses only structured `[START]`, `[STEP]`, and `[END]` logs for evaluator parsing.
+- `openenv.yaml` follows the current OpenEnv `spec_version: 1` manifest format.
 - The environment exposes three graded tasks: `easy`, `medium`, and `hard`.
 - Reward-bearing score components are clamped into the open interval `(0, 1)`.
 
