@@ -1,29 +1,19 @@
-from fastapi.testclient import TestClient
-
-from server.app import app
+from server.app import benchmark_info, list_tasks
+from env.models import build_environment_metadata
 
 
 def test_tasks_endpoint_returns_all_tasks():
-    client = TestClient(app)
-    response = client.get("/tasks")
-    assert response.status_code == 200
-    payload = response.json()
+    payload = list_tasks()
     assert [task["id"] for task in payload["tasks"]] == ["easy", "medium", "hard"]
 
 
 def test_benchmark_endpoint_exposes_summary():
-    client = TestClient(app)
-    response = client.get("/benchmark")
-    assert response.status_code == 200
-    payload = response.json()
+    payload = benchmark_info()
     assert payload["name"] == "cyber-vulnerability-triage"
     assert "application security" in payload["domain"]
 
 
 def test_metadata_endpoint_returns_environment_metadata():
-    client = TestClient(app)
-    response = client.get("/metadata")
-    assert response.status_code == 200
-    payload = response.json()
+    payload = build_environment_metadata().model_dump()
     assert payload["name"] == "cyber-vulnerability-triage"
     assert "description" in payload

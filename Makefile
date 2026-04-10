@@ -21,7 +21,7 @@ help:
 
 venv:
 	python -m venv $(VENV)
-	$(PIP) install -U pip
+	$(PIP) install -U pip setuptools wheel
 
 install:
 	$(PIP) install -e .

@@ -4,6 +4,7 @@ import os
 
 import uvicorn
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
 
 try:
     from openenv.core.env_server.http_server import create_app
@@ -31,8 +32,19 @@ else:
     )
 
 from env.tasks import TASKS
+from server.landing_page import render_landing_page
 
 router = APIRouter(tags=["benchmark"])
+
+
+@router.get("/health")
+def health() -> dict:
+    return {"status": "healthy"}
+
+
+@router.get("/", response_class=HTMLResponse)
+def root() -> str:
+    return render_landing_page()
 
 
 @router.get("/tasks")

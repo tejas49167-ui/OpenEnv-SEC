@@ -3,10 +3,12 @@ from __future__ import annotations
 from typing import Literal, Optional
 
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from env.environment import CyberVulnerabilityTriageEnvironment
 from env.models import Action, TASK_LABELS, build_environment_metadata
+from server.landing_page import render_landing_page
 from env.tasks import TASKS
 
 
@@ -22,22 +24,9 @@ def create_fallback_app() -> FastAPI:
     def health() -> dict:
         return {"status": "healthy"}
 
-    @app.get("/")
-    def root() -> dict:
-        return {
-            "name": "cyber-vulnerability-triage",
-            "tasks": TASK_LABELS,
-            "endpoints": [
-                "/",
-                "/health",
-                "/metadata",
-                "/benchmark",
-                "/tasks",
-                "/reset",
-                "/step",
-                "/state",
-            ],
-        }
+    @app.get("/", response_class=HTMLResponse)
+    def root() -> str:
+        return render_landing_page()
 
     @app.get("/metadata")
     def metadata() -> dict:
