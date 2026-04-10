@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+from typing import Literal, Optional
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+from env.environment import CyberVulnerabilityTriageEnvironment
+from env.models import Action, TASK_LABELS, build_environment_metadata
+from env.tasks import TASKS
+
+
+class ResetRequest(BaseModel):
+    task: Optional[Literal["easy", "medium", "hard"]] = None
+
+
+def create_fallback_app() -> FastAPI:
+    app = FastAPI(title="Cybersecurity Alert Triage OpenEnv", version="2.1.0")
+    environment = CyberVulnerabilityTriageEnvironment()
+
+    @app.get("/health")
+    def health() -> dict:
+        return {"status": "healthy"}
+
+    @app.get("/")
+    def root() -> dict:
+        return {
+            "name": "cyber-vulnerability-triage",
+            "tasks": TASK_LABELS,
+            "endpoints": [
+                "/",
+                "/health",
+                "/metadata",
+                "/benchmark",
+                "/tasks",
+                "/reset",
+                "/step",
+                "/state",
+            ],
+        }
+
+    @app.get("/metadata")
+    def metadata() -> dict:
+        return build_environment_metadata().model_dump()
+
+    @app.post("/reset")
+    def reset(request: Optional[ResetRequest] = None) -> dict:
+        observation = environment.reset(task=request.task if request else None)
+        return {
+            "observation": observation.model_dump(),
+            "reward": observation.reward,
+            "done": observation.done,
+        }
+
+    @app.post("/step")
+    def step(action: Action) -> dict:
+        observation = environment.step(action)
+        return {
+            "observation": observation.model_dump(),
+            "reward": observation.reward,
+            "done": observation.done,
+            "info": observation.metadata.get("info", {}),
+        }
+
+    @app.get("/state")
+    def state() -> dict:
+        return environment.state.model_dump()
+
+    @app.get("/tasks")
+    def tasks() -> dict:
+        return {
+            "tasks": [
+                {
+                    "id": task.name,
+                    "description": task.description,
+                    "instructions": task.instructions,
+                    "max_steps": task.max_steps,
+                    "required_artifacts_for_full_credit": task.required_artifacts_for_full_credit,
+                }
+                for task in TASKS.values()
+            ]
+        }
+
+    @app.get("/benchmark")
+    def benchmark() -> dict:
+        return {
+            "name": "cyber-vulnerability-triage",
+            "domain": "application security incident triage",
+            "episodes": 12,
+            "tasks": list(TASKS.keys()),
+        }
+
+    return app

@@ -1,8 +1,37 @@
 from __future__ import annotations
 
-from typing import Dict, List, Literal, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
+
+try:
+    from openenv.core.env_server.types import (
+        Action as OpenEnvAction,
+        EnvironmentMetadata,
+        Observation as OpenEnvObservation,
+        State as OpenEnvState,
+    )
+except ImportError:  # pragma: no cover
+    class OpenEnvAction(BaseModel):
+        metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    class OpenEnvObservation(BaseModel):
+        done: bool = False
+        reward: Optional[float] = None
+        metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    class OpenEnvState(BaseModel):
+        episode_id: Optional[str] = None
+        step_count: int = 0
+
+    class EnvironmentMetadata(BaseModel):
+        name: str
+        description: str
+        readme_content: Optional[str] = None
+        version: Optional[str] = None
+        author: Optional[str] = None
+        documentation_url: Optional[str] = None
 
 VulnerabilityType = Literal[
     "safe",
@@ -55,16 +84,29 @@ class RequestExample(BaseModel):
     recommended_action: ResponseAction
     explanation_keywords: List[str] = Field(default_factory=list)
     analyst_notes: str
+    service: Optional[str] = None
+    deployment_tier: Optional[str] = None
+    business_impact: Optional[str] = None
+    detection_source: Optional[str] = None
+    customer_impact: Optional[str] = None
+    analyst_handoff: Optional[str] = None
     artifacts: Dict[ArtifactName, str]
     useful_actions: List[ActionType] = Field(default_factory=list)
 
 
-class Observation(BaseModel):
+class Observation(OpenEnvObservation):
     task: TaskName
     task_label: str
     request_id: str
     queue: str
     title: str
+    service: str
+    deployment_tier: str
+    triage_priority: str
+    business_impact: str
+    detection_source: str
+    customer_impact: str
+    analyst_handoff: str
     method: str
     path: str
     headers: Dict[str, str]
@@ -84,7 +126,7 @@ class Observation(BaseModel):
     allowed_actions: List[ResponseAction]
 
 
-class Action(BaseModel):
+class Action(OpenEnvAction):
     action_type: ActionType
     vulnerability_type: Optional[VulnerabilityType] = None
     severity: Optional[SeverityLevel] = None
@@ -129,7 +171,7 @@ class StepInfo(BaseModel):
     component_scores: Dict[str, float]
 
 
-class EnvironmentState(BaseModel):
+class EnvironmentState(OpenEnvState):
     current_task: TaskName = "easy"
     current_index: int = 0
     episode_count: int = 0
@@ -140,3 +182,19 @@ class EnvironmentState(BaseModel):
     revealed_artifacts: List[ArtifactName] = Field(default_factory=list)
     evidence_log: List[str] = Field(default_factory=list)
     last_reward: Optional[Reward] = None
+
+
+def build_environment_metadata() -> EnvironmentMetadata:
+    readme_path = Path(__file__).resolve().parents[1] / "README.md"
+    readme_content = readme_path.read_text(encoding="utf-8") if readme_path.exists() else None
+    return EnvironmentMetadata(
+        name="cyber-vulnerability-triage",
+        description=(
+            "Multi-step OpenEnv environment for cybersecurity alert triage over "
+            "suspicious HTTP requests."
+        ),
+        readme_content=readme_content,
+        version="2.1.0",
+        author="Tejas",
+        documentation_url="https://github.com/meta-pytorch/OpenEnv",
+    )

@@ -1,0 +1,34 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Build / packaging (never commit)
+*.egg
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local tooling
+.tmp-openenv-venv/
+uv.lock.bak

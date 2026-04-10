@@ -93,7 +93,7 @@ def run_task(
 
     for _ in range(episodes):
         log_start(task)
-        observation = env.reset(task)
+        observation = env.reset(task=task)
         done = False
         final_reward = None
         rewards: List[float] = []
@@ -101,21 +101,25 @@ def run_task(
 
         while not done:
             action = agent.decide(observation)
-            next_step = env.state().steps_taken + 1
-            observation, reward, done, _ = env.step(action)
-            rewards.append(reward.score)
+            next_step = env.state.steps_taken + 1
+            observation = env.step(action)
+            reward_payload = observation.metadata.get("reward") or {}
+            reward_score = float(reward_payload.get("score", observation.reward or 0.0))
+            rewards.append(reward_score)
             steps_taken = next_step
             log_step(
                 step=next_step,
-                action=action.model_dump_json(),
-                reward=reward.score,
-                done=done,
+                action=action.model_dump_json(exclude={"metadata"}),
+                reward=reward_score,
+                done=observation.done,
                 error=None,
             )
-            final_reward = reward
+            done = observation.done
+            final_reward = observation
 
         assert final_reward is not None
-        score = final_reward.score
+        final_reward_payload = final_reward.metadata.get("reward") or {}
+        score = float(final_reward_payload.get("score", final_reward.reward or 0.0))
         final_scores.append(score)
         step_counts.append(steps_taken)
         log_end(success=score >= 0.5, steps=steps_taken, score=score, rewards=rewards)
