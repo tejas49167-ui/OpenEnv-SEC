@@ -1,7 +1,7 @@
 # Runtime dependencies (matches pyproject.toml `dependencies`).
-# For OpenEnv server integration, also: pip install -e ".[openenv]"
 # For dev: pip install -e ".[dev]"
 
+openenv-core>=0.2.2
 pydantic>=2.7,<3
 openai>=2.7.2,<3
 PyYAML>=6.0,<7
