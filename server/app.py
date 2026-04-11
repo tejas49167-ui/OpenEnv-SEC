@@ -1,10 +1,19 @@
-from sec_openenv.environments.cyber_vulnerability_triage.server import (
-    app,
-    benchmark_info,
-    health,
-    list_tasks,
-    main,
-    root,
-)
+from fastapi import FastAPI
 
-__all__ = ["app", "benchmark_info", "health", "list_tasks", "main", "root"]
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {"message": "Server is running"}
+
+def main():
+    import uvicorn
+    uvicorn.run(
+        "server.app:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
+
+if __name__ == "__main__":
+    main()
