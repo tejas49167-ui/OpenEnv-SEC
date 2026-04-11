@@ -1,87 +1,177 @@
 from __future__ import annotations
 
 import json
-import os
-from typing import Any, Dict
-
-from openai import OpenAI
+import re
+from typing import Any
 
 from env.models import Action, Observation
 
 
 class BaselineTriageAgent:
-    def __init__(self) -> None:
-        self.api_base_url = os.getenv("API_BASE_URL")
-        self.model_name = os.getenv("MODEL_NAME", "gpt-4o-mini")
-        self.hf_token = os.getenv("HF_TOKEN", "local-fallback-token")
-        self.client = OpenAI(base_url=self.api_base_url, api_key=self.hf_token)
+    def __init__(self, client: Any = None, model_name: str = "gpt-4o-mini") -> None:
+        self.client = client
+        self.model_name = model_name
 
     def _prompt(self, observation: Observation) -> str:
         return (
-            "You are a web security triage agent.\n"
+            "You are a senior web-security analyst operating inside a deterministic triage environment.\n"
+            "Return strict JSON with keys: action_type, vulnerability_type, severity, response_action, explanation.\n"
+            "For non-submit actions, set vulnerability_type, severity, and response_action to null.\n"
             f"Task: {observation.task}\n"
             f"Instructions: {observation.instructions}\n"
-            "Return strict JSON with keys: vulnerability_type, severity, response_action, explanation.\n"
+            f"Alert: {observation.title}\n"
+            f"Service: {observation.service}\n"
+            f"Tier: {observation.deployment_tier}\n"
+            f"Priority: {observation.triage_priority}\n"
+            f"Detection Source: {observation.detection_source}\n"
+            f"Business Impact: {observation.business_impact}\n"
+            f"Customer Impact: {observation.customer_impact}\n"
+            f"Analyst Handoff: {observation.analyst_handoff}\n"
+            f"Queue: {observation.queue}\n"
             f"Method: {observation.method}\n"
             f"Path: {observation.path}\n"
             f"Headers: {json.dumps(observation.headers, sort_keys=True)}\n"
             f"Query Params: {json.dumps(observation.query_params, sort_keys=True)}\n"
             f"Body: {observation.body}\n"
-            "Use one of the allowed values exactly."
+            f"Collected evidence: {json.dumps(observation.evidence_log, ensure_ascii=True)}\n"
+            f"Collected artifacts: {json.dumps(observation.collected_artifacts)}\n"
+            f"Remaining steps: {observation.remaining_steps}\n"
+            "Available action types: inspect_payload, decode_obfuscation, review_history, "
+            "check_source_reputation, inspect_asset_context, consult_playbook, submit_triage.\n"
+            "When enough evidence exists, submit a final triage."
         )
 
-    def _heuristic_action(self, observation: Observation) -> Action:
-        raw_text = " ".join(
+    def _extract_json(self, content: str) -> Dict[str, Any]:
+        content = content.strip()
+        if content.startswith("```"):
+            content = content.strip("`")
+            if "\n" in content:
+                content = content.split("\n", 1)[1]
+        start = content.find("{")
+        end = content.rfind("}")
+        if start == -1 or end == -1 or end < start:
+            raise ValueError("No JSON object found in model response.")
+        return json.loads(content[start : end + 1])
+
+    def _detect(self, observation: Observation) -> dict[str, str]:
+        request_text = " ".join(
             [
                 observation.path,
                 json.dumps(observation.query_params, sort_keys=True),
                 observation.body,
+                observation.title,
             ]
         )
-        upper_text = raw_text.upper()
-        haystack = raw_text.lower()
+        evidence_text = " ".join(observation.evidence_log)
+        combined_text = f"{request_text} {evidence_text}"
+        lower = combined_text.lower()
+        request_lower = request_text.lower()
 
-        if "<script" in haystack or "onerror=" in haystack:
-            return Action(
-                vulnerability_type="xss",
-                severity="high",
-                response_action="sanitize",
-                explanation="Script content suggests XSS and should be sanitized.",
-            )
-        if " OR " in upper_text or "UNION SELECT" in upper_text:
-            return Action(
-                vulnerability_type="sql_injection",
-                severity="critical",
-                response_action="block",
-                explanation="Injection pattern suggests SQL injection and should be blocked.",
-            )
-        if ";" in raw_text:
-            return Action(
-                vulnerability_type="command_injection",
-                severity="high",
-                response_action="block",
-                explanation="Command separator suggests command injection and should be blocked.",
-            )
-        if "../" in haystack:
-            return Action(
-                vulnerability_type="path_traversal",
-                severity="high",
-                response_action="block",
-                explanation="File path traversal markers suggest an injection attempt and should be blocked.",
-            )
+        if any(token in lower for token in ["<script", "onerror=", "script>", "javascript:"]):
+            return {
+                "vulnerability_type": "xss",
+                "severity": "medium",
+                "response_action": "sanitize"
+                if any(token in lower for token in ["encoded", "&#x3c", "%3cscript"])
+                else "block",
+            }
+        if re.search(r"(?i)union\s+select", combined_text) or re.search(
+            r"(?i)(['\"].{0,12}\bor\b.{0,12}=)|(/\*\*/or/\*\*/)|sqlmap",
+            combined_text,
+        ):
+            return {
+                "vulnerability_type": "sql_injection",
+                "severity": "critical",
+                "response_action": "block",
+            }
+        if re.search(r"(?i)(;|&&)\s*(ls|whoami|cat|id)\b", combined_text) or (
+            "command injection" in lower
+            and any(token in request_lower for token in ["/api/ping", "/api/archive"])
+        ):
+            return {
+                "vulnerability_type": "command_injection",
+                "severity": "high",
+                "response_action": "block",
+            }
+        if any(
+            token in lower for token in ["../", "..%2f", "etc/passwd", "auth.log", "path traversal"]
+        ):
+            return {
+                "vulnerability_type": "path_traversal",
+                "severity": "high",
+                "response_action": "block",
+            }
+        return {
+            "vulnerability_type": "safe",
+            "severity": "none",
+            "response_action": "allow",
+        }
+
+    def _preferred_action_sequence(
+        self, observation: Observation, prediction: dict[str, str]
+    ) -> list[str]:
+        sequence = ["inspect_payload"]
+        raw = " ".join(
+            [json.dumps(observation.query_params, sort_keys=True), observation.body]
+        ).lower()
+
+        if any(token in raw for token in ["%3c", "&#x3c", "%20%26%26", "..%2f", "/**/"]):
+            sequence.append("decode_obfuscation")
+        if observation.task in {"medium", "hard"}:
+            sequence.append("review_history")
+        if observation.task == "hard":
+            sequence.append("inspect_asset_context")
+            if prediction["vulnerability_type"] in {"sql_injection", "path_traversal"}:
+                sequence.append("check_source_reputation")
+            sequence.append("consult_playbook")
+        elif observation.task == "medium":
+            sequence.append("consult_playbook")
+        return sequence
+
+    def _build_explanation(self, prediction: dict[str, str]) -> str:
+        vulnerability = prediction["vulnerability_type"]
+        response = prediction["response_action"]
+        severity = prediction["severity"]
+        if vulnerability == "safe":
+            return "Evidence points to normal application usage with no exploit indicators, so this request is safe and should be allowed."
+        if vulnerability == "xss":
+            return f"Payload evidence indicates XSS-style script injection, the severity is {severity}, and the safest response is to {response} the request."
+        if vulnerability == "sql_injection":
+            return f"Request contains SQL injection indicators tied to authentication or data access, making this {severity} severity and a clear {response} decision."
+        if vulnerability == "command_injection":
+            return f"Input shows command injection behavior with shell execution markers, so this is {severity} severity and should be {response}ed."
+        return f"Decoded path manipulation indicates path traversal, which is {severity} severity and should be {response}ed to protect sensitive files."
+
+    def _heuristic_action(self, observation: Observation) -> Action:
+        prediction = self._detect(observation)
+        planned_actions = self._preferred_action_sequence(observation, prediction)
+
+        for action_type in planned_actions:
+            artifact = {
+                "inspect_payload": "payload_analysis",
+                "decode_obfuscation": "decoded_input",
+                "review_history": "traffic_history",
+                "check_source_reputation": "source_reputation",
+                "inspect_asset_context": "asset_context",
+                "consult_playbook": "playbook_guidance",
+            }[action_type]
+            if artifact not in observation.collected_artifacts and observation.remaining_steps > 1:
+                return Action(action_type=action_type, explanation="")
+
         return Action(
-            vulnerability_type="safe",
-            severity="none",
-            response_action="allow",
-            explanation="This looks like a normal request and can be allowed.",
+            action_type="submit_triage",
+            vulnerability_type=prediction["vulnerability_type"],
+            severity=prediction["severity"],
+            response_action=prediction["response_action"],
+            explanation=self._build_explanation(prediction),
         )
 
     def _parse_response(self, content: str) -> Action:
-        payload: Dict[str, Any] = json.loads(content)
+        payload = self._extract_json(content)
         return Action(**payload)
 
     def decide(self, observation: Observation) -> Action:
-        if not self.api_base_url:
+        if not self.client:
             return self._heuristic_action(observation)
 
         try:
@@ -90,7 +180,6 @@ class BaselineTriageAgent:
                 input=self._prompt(observation),
                 temperature=0,
             )
-            content = response.output_text
-            return self._parse_response(content)
+            return self._parse_response(response.output_text)
         except Exception:
             return self._heuristic_action(observation)

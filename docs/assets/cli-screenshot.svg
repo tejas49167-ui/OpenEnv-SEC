@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" fill="none">
+  <rect width="1280" height="720" fill="#F4EFE4"/>
+  <rect x="120" y="76" width="1040" height="568" rx="24" fill="#171411"/>
+  <rect x="120" y="76" width="1040" height="46" rx="24" fill="#2A2520"/>
+  <circle cx="156" cy="99" r="8" fill="#E57373"/>
+  <circle cx="182" cy="99" r="8" fill="#F7C76B"/>
+  <circle cx="208" cy="99" r="8" fill="#7BC67B"/>
+  <text x="240" y="104" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">tejas@sec-openenv-demo</text>
+
+  <text x="156" y="168" fill="#8DD3C7" font-family="JetBrains Mono, monospace" font-size="22">$ sec-openenv list</text>
+  <text x="156" y="214" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">slug                       maturity  domain                               server</text>
+  <text x="156" y="244" fill="#CBBBA9" font-family="JetBrains Mono, monospace" font-size="18">----------------------------------------------------------------------------------------------</text>
+  <text x="156" y="276" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">cyber-vulnerability-triage beta      application security incident triage sec_openenv...cyber...</text>
+  <text x="156" y="306" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">log-anomaly                alpha     detection engineering                sec_openenv...log...</text>
+
+  <text x="156" y="410" fill="#8DD3C7" font-family="JetBrains Mono, monospace" font-size="22">$ python examples/benchmark/run_single_episode.py</text>
+  <text x="156" y="456" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">environment: cyber-vulnerability-triage</text>
+  <text x="156" y="486" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">task: hard</text>
+  <text x="156" y="516" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">steps: 5</text>
+  <text x="156" y="546" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">final_score: 0.999</text>
+  <text x="156" y="576" fill="#F5EBDD" font-family="JetBrains Mono, monospace" font-size="18">success: True</text>
+</svg>

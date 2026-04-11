@@ -1,123 +1,220 @@
-# Cybersecurity Web Vulnerability Triage Environment
+---
+title: Sec-OpenEnv
+emoji: 🛡️
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 8000
+pinned: false
+license: mit
+short_description: Security benchmark framework for cyber triage
+---
 
-## Environment Description
+<img width="40" height="40" alt="Sec-OpenEnv logo" src="assets/logo.svg" /> **Sec-OpenEnv**
 
-This project implements a production-quality OpenEnv-style environment for web vulnerability triage. An agent receives realistic HTTP requests and must determine whether they are benign or malicious, classify severity, and choose the safest operational response.
+![Install](https://img.shields.io/badge/install-pip%20install%20--e%20.-1f6feb)
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB)
+![FastAPI](https://img.shields.io/badge/api-FastAPI-009688)
+![License](https://img.shields.io/badge/license-MIT-0f172a)
+![OpenEnv](https://img.shields.io/badge/OpenEnv-compatible-475569)
+![Status](https://img.shields.io/badge/maturity-beta-b45309)
 
-## Real-World Motivation
+Sec-OpenEnv is a **security environment framework** for building, serving, and evaluating structured security workflows. This repository currently ships one complete environment, **Cyber Vulnerability Triage**, and is organized so future environments, plugins, benchmarks, and training loops can grow around the same contract.
 
-Security teams routinely inspect application traffic for attacks such as reflected XSS, SQL injection, command injection, and directory traversal. This environment mirrors that workflow in a deterministic offline setting so models can be benchmarked on practical detection and triage behavior.
+The benchmark itself is unchanged: an agent receives a suspicious web request, investigates through structured actions, and submits a final triage decision with deterministic grading. What changes here is the repository maturity around that benchmark: packaging, documentation, extensibility, examples, and contributor experience.
 
-## Observation Space
+## Problem
 
-The environment returns a Pydantic `Observation` model with:
+Most security-eval repos are either:
 
-- `task`
-- `request_id`
-- `method`
-- `path`
-- `headers`
-- `query_params`
-- `body`
-- `source_ip`
-- `user_agent`
-- `instructions`
+- toy classification datasets with no workflow realism
+- custom demos that are hard to install, extend, compare, or benchmark
 
-## Action Space
+Sec-OpenEnv fills the gap with a framework-shaped repository for **multi-step security reasoning**.
 
-The agent must return a Pydantic `Action` model with:
+## Why This Matters
 
-- `vulnerability_type`: `safe`, `xss`, `sql_injection`, `command_injection`, `path_traversal`
-- `severity`: `none`, `low`, `medium`, `high`, `critical`
-- `response_action`: `allow`, `block`, `sanitize`
-- `explanation`: short analyst-style reasoning
+Security operations are not one-shot labels. Real triage involves context gathering, selective investigation, and operationally safe decisions. Sec-OpenEnv makes that workflow reproducible enough for research and structured enough for industry experimentation.
 
-## Task Descriptions
+## Architecture
 
-- `easy`: detect the vulnerability type
-- `medium`: detect the vulnerability type and severity
-- `hard`: complete end-to-end triage with detection, severity, response action, and explanation
+```text
+                    +-----------------------------------+
+                    |           Sec-OpenEnv             |
+                    |  framework metadata + CLI + docs  |
+                    +-------------------+---------------+
+                                        |
+                                        v
+                +---------------------------------------------+
+                | Environment Module: Cyber Vulnerability     |
+                | Triage                                      |
+                |                                             |
+                |  Actions -> State -> Reward                 |
+                |  inspect_payload                            |
+                |  decode_obfuscation                         |
+                |  review_history                             |
+                |  check_source_reputation                    |
+                |  inspect_asset_context                      |
+                |  consult_playbook                           |
+                |  submit_triage                              |
+                +-------------------+-------------------------+
+                                    |
+               +--------------------+--------------------+
+               |                                         |
+               v                                         v
+     +-----------------------+                 +-----------------------+
+     | Deterministic Dataset |                 | FastAPI / OpenEnv API |
+     | env/data.py           |                 | /reset /step /state   |
+     | env/tasks.py          |                 | /metadata /health     |
+     +-----------------------+                 +-----------------------+
+                                    |
+                                    v
+                      +------------------------------+
+                      | Benchmarking / Evaluation    |
+                      | baseline agent + inference   |
+                      | examples + external tooling  |
+                      +------------------------------+
+```
 
-## Dataset
+## Key Features
 
-The built-in dataset contains 10 deterministic HTTP request examples covering:
+- **Framework-style layout** with `src/sec_openenv/` for scalable growth
+- **Deterministic security environment** for reproducible evaluation
+- **OpenEnv-compatible API** for local, Docker, and hosted deployment
+- **Contributor-ready docs** covering architecture, extensibility, security, and roadmap
+- **Compatibility-preserving structure** so the existing benchmark logic remains intact
 
-- XSS
-- SQL injection
-- Command injection
-- Path traversal
-- Safe traffic
-
-Each record includes ground-truth vulnerability type, severity, recommended action, and explanation keywords for deterministic grading.
-
-## Grading And Rewards
-
-Three deterministic graders are included:
-
-- `easy`: 1.0 for correct vulnerability type, else 0.0
-- `medium`: 0.5 for vulnerability match and 0.5 for severity match
-- `hard`: partial scoring with:
-  - `+0.4` vulnerability match
-  - `+0.3` severity match
-  - `+0.2` action correctness
-  - `+0.1` explanation quality
-  - harmful decisions penalized deterministically
-
-All graders return scores in the `[0.0, 1.0]` range with no randomness.
-
-## Setup
+## Quickstart
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -U pip setuptools wheel
+python -m pip install -e ".[dev]"
+sec-openenv serve
 ```
 
-## How To Run Inference
+Smoke test:
 
-Local deterministic fallback:
+```bash
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/reset \
+  -H 'Content-Type: application/json' \
+  -d '{"task":"hard"}'
+```
+
+Run a realistic example:
+
+```bash
+python examples/clients/async_api_walkthrough.py
+```
+
+Run the baseline benchmark:
 
 ```bash
 python inference.py
 ```
 
-With an OpenAI-compatible endpoint:
+## Example Usage
 
-```bash
-export API_BASE_URL="https://your-openai-compatible-endpoint/v1"
-export MODEL_NAME="gpt-4o-mini"
-export HF_TOKEN="your-token"
-python inference.py
+```python
+import asyncio
+
+from cyber_vulnerability_triage import CyberVulnerabilityTriageEnv
+
+
+async def main() -> None:
+    async with CyberVulnerabilityTriageEnv(base_url="http://localhost:8000") as env:
+        result = await env.reset(task="hard")
+        print(result.observation.request_id)
+
+        await env.inspect_payload()
+        await env.review_history()
+
+        final = await env.submit_triage(
+            vulnerability_type="xss",
+            severity="medium",
+            response_action="sanitize",
+            explanation="Payload and context indicate reflected script injection.",
+        )
+        print(final.done, final.reward)
+
+
+asyncio.run(main())
 ```
 
-If the API request fails, the baseline agent automatically falls back to a deterministic heuristic action.
+## Real Usage Flows
 
-## Docker
+- **Researcher benchmark run**: start the server, run `python inference.py`, compare `easy`, `medium`, and `hard`.
+- **Platform demo**: deploy the FastAPI server, connect a client, replay deterministic cases for demos.
+- **Environment authoring**: add new modules under `src/sec_openenv/environments/`, register them, and document them.
 
-```bash
-docker build -t cyber-openenv .
-docker run --rm cyber-openenv
-```
+## Why This Is Different
 
-## Baseline Scores
+- It treats a security benchmark like a **framework module**, not a script dump.
+- It is designed for **experimentation, benchmarking, and training** from the same foundation.
+- It includes the ecosystem signals maintainers, researchers, and adopters look for before taking a project seriously.
 
-Using the built-in deterministic fallback heuristic, the expected scores are:
-
-- `easy`: 1.000
-- `medium`: 1.000
-- `hard`: 1.000
-- `overall`: 1.000
-
-## Project Structure
+## Repository Structure
 
 ```text
-cyber-openenv/
-├── agent/
+.
+├── src/
+│   ├── sec_openenv/
+│   │   ├── cli.py
+│   │   ├── core/
+│   │   ├── framework/
+│   │   ├── config/
+│   │   └── environments/
+│   │       └── cyber_vulnerability_triage/
+│   └── cyber_vulnerability_triage/
+│       └── server/
 ├── env/
 ├── graders/
-├── inference.py
-├── openenv.yaml
-├── Dockerfile
-├── requirements.txt
-└── README.md
+├── server/
+├── examples/
+├── docs/
+├── rfcs/
+├── configs/
+├── tests/
+└── assets/
 ```
+
+## Documentation Map
+
+- [docs/architecture.md](docs/architecture.md)
+- [docs/environments.md](docs/environments.md)
+- [docs/extensibility.md](docs/extensibility.md)
+- [docs/security-model.md](docs/security-model.md)
+- [docs/roadmap.md](docs/roadmap.md)
+- [rfcs/0001-environment-registry.md](rfcs/0001-environment-registry.md)
+- [rfcs/0002-evaluation-traces.md](rfcs/0002-evaluation-traces.md)
+
+## Screenshots And Demo Placeholders
+
+- `docs/assets/server-home.png`
+- `docs/assets/openapi-docs.png`
+- `docs/assets/benchmark-run.png`
+
+## Ecosystem Signals
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [ROADMAP.md](ROADMAP.md)
+- [CHANGELOG.md](CHANGELOG.md)
+- [LICENSE](LICENSE)
+- [.env.example](.env.example)
+- [.github/ISSUE_TEMPLATE/bug_report.md](.github/ISSUE_TEMPLATE/bug_report.md)
+- [.github/ISSUE_TEMPLATE/feature_request.md](.github/ISSUE_TEMPLATE/feature_request.md)
+- [.github/pull_request_template.md](.github/pull_request_template.md)
+
+## Contributor Call To Action
+
+High-impact contributions include:
+
+- new security environments
+- stronger eval tooling
+- more deterministic cases and tests
+- better docs, demos, and deployment recipes
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), and use `rfcs/` for bigger design ideas.

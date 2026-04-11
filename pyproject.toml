@@ -1,0 +1,118 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sec-openenv"
+version = "2.1.0"
+description = "Security environment framework for OpenEnv-style experimentation, benchmarking, and training."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Tejas" },
+]
+keywords = [
+  "openenv",
+  "cybersecurity",
+  "benchmark",
+  "framework",
+  "security-environment",
+  "reinforcement-learning",
+  "fastapi",
+  "security-triage",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Framework :: FastAPI",
+  "Topic :: Security",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "openenv-core>=0.2.2",
+  "pydantic>=2.7,<3",
+  "openai>=2.7.2,<3",
+  "PyYAML>=6.0,<7",
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.30,<1",
+  "requests>=2.31,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-cov>=4.0.0",
+  "ruff>=0.6.0",
+  "Sphinx>=7.0,<9",
+  "myst-parser>=2,<4",
+]
+openenv = [
+  "openenv-core>=0.2.2",
+]
+openenv-core = [
+  "openenv-core[core]>=0.2.2",
+]
+docs = [
+  "Sphinx>=7.0,<9",
+  "myst-parser>=2,<4",
+]
+
+[project.scripts]
+sec-openenv = "sec_openenv.cli:main"
+server = "cyber_vulnerability_triage.server.app:main"
+cyber-triage-server = "cyber_vulnerability_triage.server.app:main"
+cyber-triage-eval = "inference:main"
+
+[project.urls]
+Homepage = "https://github.com/tejas/sec-openenv"
+Documentation = "https://github.com/tejas/sec-openenv/tree/main/docs"
+Repository = "https://github.com/tejas/sec-openenv"
+Issues = "https://github.com/tejas/sec-openenv/issues"
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+  "sec_openenv",
+  "sec_openenv.core",
+  "sec_openenv.framework",
+  "sec_openenv.config",
+  "sec_openenv.environments",
+  "sec_openenv.environments.cyber_vulnerability_triage",
+  "cyber_vulnerability_triage",
+  "cyber_vulnerability_triage.server",
+  "agent",
+  "env",
+  "graders",
+  "server",
+]
+
+[tool.setuptools.package-dir]
+sec_openenv = "src/sec_openenv"
+"sec_openenv.core" = "src/sec_openenv/core"
+"sec_openenv.framework" = "src/sec_openenv/framework"
+"sec_openenv.config" = "src/sec_openenv/config"
+"sec_openenv.environments" = "src/sec_openenv/environments"
+"sec_openenv.environments.cyber_vulnerability_triage" = "src/sec_openenv/environments/cyber_vulnerability_triage"
+cyber_vulnerability_triage = "src/cyber_vulnerability_triage"
+"cyber_vulnerability_triage.server" = "src/cyber_vulnerability_triage/server"
+server = "server"
+
+[tool.setuptools.package-data]
+sec_openenv = ["py.typed"]
+cyber_vulnerability_triage = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]

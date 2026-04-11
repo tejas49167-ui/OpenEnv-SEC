@@ -1,0 +1,35 @@
+{
+  "observation": {
+    "task": "hard",
+    "request_id": "REQ-003-V1",
+    "title": "Authentication bypass syntax in login request (baseline)",
+    "service": "identity-web",
+    "triage_priority": "P0",
+    "steps_taken": 1,
+    "remaining_steps": 5,
+    "available_action_types": [
+      "inspect_payload",
+      "decode_obfuscation",
+      "review_history",
+      "check_source_reputation",
+      "inspect_asset_context",
+      "consult_playbook",
+      "submit_triage"
+    ],
+    "collected_artifacts": [
+      "payload_analysis"
+    ],
+    "evidence_log": [
+      "payload_analysis: The username field contains quote termination followed by OR '1'='1."
+    ],
+    "done": false,
+    "reward": 0.12
+  },
+  "reward": 0.12,
+  "done": false,
+  "info": {
+    "task": "hard",
+    "grader_name": "hard_grader",
+    "steps_taken": 1
+  }
+}
