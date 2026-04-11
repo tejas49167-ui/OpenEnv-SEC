@@ -1,0 +1,14 @@
+include README.md
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+include CHANGELOG.md
+include ROADMAP.md
+include LICENSE
+include openenv.yaml
+include assets/logo.svg
+recursive-include src *.py
+recursive-include configs *.yaml
+recursive-include server *.py
+recursive-include docs *.md
+recursive-include docs *.py
+recursive-include rfcs *.md

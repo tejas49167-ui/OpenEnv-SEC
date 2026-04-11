@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" fill="none">
+  <rect width="1280" height="720" fill="#F4EFE4"/>
+  <rect x="48" y="48" width="1184" height="624" rx="28" fill="#FFFDF8" stroke="#D8CDBA" stroke-width="2"/>
+  <text x="84" y="108" fill="#1F1A16" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Sec-OpenEnv Architecture</text>
+  <text x="84" y="140" fill="#6A6259" font-family="Segoe UI, Arial, sans-serif" font-size="18">Registry-driven framework for serving, running, and evaluating security environments.</text>
+
+  <rect x="84" y="188" width="240" height="112" rx="20" fill="#F6F0E7" stroke="#D8CDBA"/>
+  <text x="108" y="228" fill="#0F766E" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Agents and Evaluators</text>
+  <text x="108" y="256" fill="#443D37" font-family="Segoe UI, Arial, sans-serif" font-size="16">Baseline agents</text>
+  <text x="108" y="280" fill="#443D37" font-family="Segoe UI, Arial, sans-serif" font-size="16">Custom policies</text>
+
+  <rect x="364" y="188" width="252" height="112" rx="20" fill="#EEF7F5" stroke="#8DC8C1"/>
+  <text x="388" y="228" fill="#0F766E" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">CLI and Python API</text>
+  <text x="388" y="256" fill="#335952" font-family="Segoe UI, Arial, sans-serif" font-size="16">sec-openenv list / info / serve</text>
+  <text x="388" y="280" fill="#335952" font-family="Segoe UI, Arial, sans-serif" font-size="16">run_episode() / evaluate_models()</text>
+
+  <rect x="660" y="188" width="248" height="112" rx="20" fill="#FFF2E8" stroke="#EDB183"/>
+  <text x="684" y="228" fill="#B45309" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Environment Registry</text>
+  <text x="684" y="256" fill="#6D4B32" font-family="Segoe UI, Arial, sans-serif" font-size="16">Single source of truth</text>
+  <text x="684" y="280" fill="#6D4B32" font-family="Segoe UI, Arial, sans-serif" font-size="16">Entry points, metadata, serving</text>
+
+  <rect x="948" y="188" width="200" height="112" rx="20" fill="#F8F4EA" stroke="#D8CDBA"/>
+  <text x="972" y="228" fill="#1F1A16" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">FastAPI Layer</text>
+  <text x="972" y="256" fill="#514941" font-family="Segoe UI, Arial, sans-serif" font-size="16">/reset /step</text>
+  <text x="972" y="280" fill="#514941" font-family="Segoe UI, Arial, sans-serif" font-size="16">/benchmark /tasks</text>
+
+  <rect x="160" y="404" width="278" height="156" rx="22" fill="#FFF7F0" stroke="#EDB183"/>
+  <text x="188" y="444" fill="#B45309" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Cyber Vulnerability Triage</text>
+  <text x="188" y="474" fill="#5B4634" font-family="Segoe UI, Arial, sans-serif" font-size="16">HTTP requests, artifacts, deterministic grading</text>
+  <text x="188" y="502" fill="#5B4634" font-family="Segoe UI, Arial, sans-serif" font-size="16">48-case dataset with noisy and edge variants</text>
+  <text x="188" y="530" fill="#5B4634" font-family="Segoe UI, Arial, sans-serif" font-size="16">XSS, SQLi, command injection, traversal</text>
+
+  <rect x="502" y="404" width="278" height="156" rx="22" fill="#EEF7F5" stroke="#8DC8C1"/>
+  <text x="530" y="444" fill="#0F766E" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Phishing Detection</text>
+  <text x="530" y="474" fill="#335952" font-family="Segoe UI, Arial, sans-serif" font-size="16">Headers, links, tenant history, response advice</text>
+  <text x="530" y="502" fill="#335952" font-family="Segoe UI, Arial, sans-serif" font-size="16">Credential harvesting and BEC coverage</text>
+  <text x="530" y="530" fill="#335952" font-family="Segoe UI, Arial, sans-serif" font-size="16">Lightweight email security benchmark</text>
+
+  <rect x="844" y="404" width="278" height="156" rx="22" fill="#F6F0E7" stroke="#D8CDBA"/>
+  <text x="872" y="444" fill="#1F1A16" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Log Anomaly Response</text>
+  <text x="872" y="474" fill="#514941" font-family="Segoe UI, Arial, sans-serif" font-size="16">Operational log triage and context review</text>
+  <text x="872" y="502" fill="#514941" font-family="Segoe UI, Arial, sans-serif" font-size="16">Bruteforce, exfiltration, privilege escalation</text>
+  <text x="872" y="530" fill="#514941" font-family="Segoe UI, Arial, sans-serif" font-size="16">Response recommendation loop</text>
+
+  <path d="M324 244H364" stroke="#9A8F81" stroke-width="4" stroke-linecap="round"/>
+  <path d="M616 244H660" stroke="#9A8F81" stroke-width="4" stroke-linecap="round"/>
+  <path d="M908 244H948" stroke="#9A8F81" stroke-width="4" stroke-linecap="round"/>
+  <path d="M784 300V352" stroke="#9A8F81" stroke-width="4" stroke-linecap="round"/>
+  <path d="M784 352H299V404" stroke="#9A8F81" stroke-width="4" stroke-linecap="round"/>
+  <path d="M784 352V404" stroke="#9A8F81" stroke-width="4" stroke-linecap="round"/>
+  <path d="M784 352H983V404" stroke="#9A8F81" stroke-width="4" stroke-linecap="round"/>
+</svg>
