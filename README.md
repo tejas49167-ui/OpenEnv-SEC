@@ -10,7 +10,6 @@ license: mit
 short_description: Security-focused environment framework for AI agents
 ---
 
-[![CI](https://github.com/tejas/sec-openenv/actions/workflows/ci.yml/badge.svg)](https://github.com/tejas/sec-openenv/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776AB)
 ![License](https://img.shields.io/badge/license-MIT-0f172a)
 
