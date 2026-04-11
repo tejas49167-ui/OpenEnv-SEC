@@ -1,6 +1,11 @@
-FROM python:3.11-slim
+# ---------- Builder stage ----------
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml README.md LICENSE MANIFEST.in /app/
 COPY src /app/src
@@ -11,7 +16,27 @@ COPY server /app/server
 COPY configs /app/configs
 COPY inference.py app.py client.py models.py __init__.py openenv.yaml /app/
 
-RUN pip install --no-cache-dir ".[openenv]"
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir ".[openenv]"
+
+
+# ---------- Final stage ----------
+FROM python:3.11-slim
+
+WORKDIR /app
+
+
+COPY --from=builder /opt/venv /opt/venv
+
+
+COPY --from=builder /app /app
+
+
+ENV PATH="/opt/venv/bin:$PATH"
 
 EXPOSE 8000
 
