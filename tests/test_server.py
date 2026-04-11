@@ -1,3 +1,5 @@
+from fastapi.testclient import TestClient
+
 from env.data import load_examples
 from env.models import Action, build_environment_metadata
 from server.app import app, benchmark_info, health, list_tasks, root
@@ -23,6 +25,12 @@ def test_root_endpoint_returns_html_landing_page():
     assert "/docs" in html
 
 
+def test_root_endpoint_respects_base_path_links():
+    html = root("/web")
+    assert 'href="/web/docs"' in html
+    assert 'href="/web/health"' in html
+
+
 def test_health_endpoint_reports_healthy_status():
     assert health() == {"status": "healthy"}
 
@@ -37,6 +45,20 @@ def test_http_routes_are_registered():
     assert ("/health", ("GET",)) in routes
     assert ("/reset", ("POST",)) in routes
     assert ("/step", ("POST",)) in routes
+
+
+def test_web_base_path_serves_root_route():
+    client = TestClient(app)
+    response = client.get("/web")
+    assert response.status_code == 200
+    assert "Cyber Vulnerability Triage" in response.text
+
+
+def test_web_base_path_serves_health_route():
+    client = TestClient(app)
+    response = client.get("/web/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "healthy"}
 
 
 def test_metadata_endpoint_returns_environment_metadata():

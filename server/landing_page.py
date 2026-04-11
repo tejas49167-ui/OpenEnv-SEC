@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 
-def render_landing_page() -> str:
-    return """<!DOCTYPE html>
+def render_landing_page(base_path: str = "") -> str:
+    return (
+        """<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -147,9 +148,9 @@ def render_landing_page() -> str:
           grading, and a deployment-ready OpenEnv-compatible API.
         </p>
         <div class="actions">
-          <a class="button primary" href="/docs">Open API Docs</a>
-          <a class="button secondary" href="/health">Health Check</a>
-          <a class="button secondary" href="/benchmark">Benchmark Info</a>
+          <a class="button primary" href="__DOCS_HREF__">Open API Docs</a>
+          <a class="button secondary" href="__HEALTH_HREF__">Health Check</a>
+          <a class="button secondary" href="__BENCHMARK_HREF__">Benchmark Info</a>
         </div>
       </section>
 
@@ -195,3 +196,7 @@ def render_landing_page() -> str:
   </body>
 </html>
 """
+        .replace("__DOCS_HREF__", f"{base_path}/docs")
+        .replace("__HEALTH_HREF__", f"{base_path}/health")
+        .replace("__BENCHMARK_HREF__", f"{base_path}/benchmark")
+    )

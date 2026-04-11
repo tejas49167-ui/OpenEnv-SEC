@@ -6,7 +6,6 @@ colorTo: green
 sdk: docker
 app_port: 8000
 license: mit
-base_path: /web
 tags:
   - openenv
   - cybersecurity

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -25,12 +25,21 @@ app = FastAPI(title="Cybersecurity Alert Triage OpenEnv", version="2.1.0")
 environment = CyberVulnerabilityTriageEnvironment()
 
 
+@app.middleware("http")
+async def support_hugging_face_base_path(request: Request, call_next):
+    if request.scope["path"].startswith("/web"):
+        trimmed_path = request.scope["path"][len("/web") :] or "/"
+        request.scope["root_path"] = "/web"
+        request.scope["path"] = trimmed_path
+    return await call_next(request)
+
+
 def health() -> dict[str, str]:
     return {"status": "healthy"}
 
 
-def root() -> str:
-    return render_landing_page()
+def root(base_path: str = "") -> str:
+    return render_landing_page(base_path=base_path)
 
 
 def metadata() -> dict:
@@ -67,8 +76,8 @@ def health_route() -> dict[str, str]:
 
 
 @app.get("/", response_class=HTMLResponse)
-def root_route() -> str:
-    return root()
+def root_route(request: Request) -> str:
+    return root(base_path=request.scope.get("root_path", ""))
 
 
 @app.get("/metadata")
