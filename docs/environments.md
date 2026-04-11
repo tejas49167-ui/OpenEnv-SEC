@@ -2,7 +2,7 @@
 
 Sec-OpenEnv treats environments as first-class modules inside a shared framework, not as one-off scripts.
 
-## Bundled Environment
+## Bundled Environments
 
 ### Cyber Vulnerability Triage
 
@@ -18,6 +18,14 @@ Tasks:
 - `medium`: classify the vulnerability family and severity
 - `hard`: perform a full triage decision including response action and explanation
 
+### Log Anomaly
+
+Purpose:
+
+- investigate suspicious identity, process, and network events
+- collect context before assigning verdict, severity, and response
+- prove the framework supports more than one security workflow
+
 ## Environment Contract
 
 Each environment in Sec-OpenEnv should expose:
@@ -31,5 +39,6 @@ Each environment in Sec-OpenEnv should expose:
 ## Current Layout
 
 - `src/sec_openenv/environments/cyber_vulnerability_triage/`: framework-facing package
+- `src/sec_openenv/environments/log_anomaly/`: lightweight second environment
 - `src/cyber_vulnerability_triage/`: backward-compatible imports
-- `env/`: benchmark internals and task logic
+- `env/`: original benchmark internals and task logic kept for compatibility

@@ -1,89 +1,66 @@
 # Contributing
 
-Thanks for contributing to Sec-OpenEnv.
+Sec-OpenEnv is maintained as a security environment framework. Good contributions improve the framework surface, preserve determinism, and make the project easier to trust and extend.
 
-This repository is maintained as a **security environment framework**. Contributions should make the project easier to adopt, extend, benchmark, and trust without changing the core meaning of the environments it ships.
-
-## Project Principles
-
-- Preserve the existing benchmark concepts and task semantics.
-- Prefer deterministic behavior for environments, grading, and tests.
-- Optimize for clarity, portability, and realistic extensibility.
-- Treat docs, examples, and packaging as first-class project surfaces.
-
-## Repository Map
-
-- `src/sec_openenv/`: framework namespace, registry, and CLI
-- `src/cyber_vulnerability_triage/`: compatibility package for existing imports
-- `env/`: current benchmark implementation internals
-- `server/`: FastAPI server entrypoints
-- `examples/`: runnable client and benchmark examples
-- `docs/`: architecture, environments, extensibility, security, roadmap
-- `rfcs/`: larger future-facing design proposals
-- `tests/`: API and environment contract coverage
-
-## Local Setup
+## Contributor Onboarding
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip setuptools wheel
-python -m pip install -e ".[dev]"
-```
-
-## Daily Commands
-
-```bash
-make test
-make lint
-make format
-make server
-make docs
-python inference.py
+git clone https://github.com/tejas/sec-openenv.git
+cd sec-openenv
+python -m pip install -e .
+python -m pip install pytest ruff
+pytest
 sec-openenv list
 ```
 
-## Recommended Contribution Flow
+## Design Principles
 
-1. Open an issue for bug fixes that affect behavior or for proposals that add new surfaces.
-2. For larger design changes, add an RFC in `rfcs/` before implementation.
-3. Keep changes focused and document any user-facing impact.
-4. Add or update tests for behavior changes.
-5. Run linting and the relevant test subset before opening a pull request.
+- Keep the core idea intact: security workflows should become reproducible environments for AI agents.
+- Preserve compatibility where reasonable for the original cyber triage surface.
+- Prefer registry-driven behavior over hardcoded environment wiring.
+- Keep datasets, evaluation, docs, and packaging first-class.
+- Make environments deterministic unless nondeterminism is the feature being tested.
 
-## Pull Request Expectations
+## Where Things Go
 
-- Keep PRs reviewable and scoped around one concern.
-- Include a short rationale and a validation section.
-- Update `README.md`, `docs/`, or examples when developer workflows change.
-- Preserve backward compatibility where practical for existing imports and commands.
-- Do not introduce nondeterministic benchmark behavior without a clear justification.
+- `src/sec_openenv/core/`: shared framework primitives
+- `src/sec_openenv/framework/`: registry and discovery
+- `src/sec_openenv/environments/`: canonical packaged environments
+- `src/sec_openenv/server/`: reusable server factory
+- `src/sec_openenv/evaluation/`: shared episode and model evaluation helpers
+- `env/` and `server/`: compatibility shims for legacy imports
+- `examples/`: runnable demos
+- `tests/`: contract and regression coverage
 
 ## Adding A New Environment
 
-1. Create a new package under `src/sec_openenv/environments/`.
-2. Implement the environment logic with typed models and deterministic tasks where possible.
-3. Add a server entrypoint that supports the existing API contract.
-4. Register the environment in `src/sec_openenv/framework/registry.py`.
-5. Add examples in `examples/`.
-6. Add tests for environment logic and HTTP behavior.
-7. Document it in `docs/` and, if the design is substantial, add an RFC.
+1. Create `src/sec_openenv/environments/<env_name>/`.
+2. Add a dataset, typed models, environment class, baseline agent, and server module.
+3. Register it in `src/sec_openenv/framework/registry.py`.
+4. Add one runnable example and at least one smoke test.
+5. Update the README or docs if the environment is user-facing.
 
-See [docs/extensibility.md](docs/extensibility.md) for the detailed checklist.
+If the change introduces a new framework pattern, add an RFC in `rfcs/`.
 
-## Before Opening A PR
+## Pull Request Checklist
 
-- Run `make test`
-- Run `make lint`
-- Run `make format`
-- Make sure the server starts locally
-- Verify examples still reflect the current public API
-- Check that secrets or personal tokens are not in the diff
+- Run `pytest`
+- Run `ruff check .`
+- Verify `sec-openenv list` and `sec-openenv info --environment <env>` still work
+- Update examples or docs when user-facing behavior changes
+- Avoid breaking the original cyber triage workflow unless the change is intentional and documented
 
-## Good First Contributions
+## Review Expectations
 
-- improve examples and quickstart flows
-- expand tests around the API contract
-- refine documentation and architecture notes
-- strengthen packaging, release, or CI metadata
-- add contributor tooling for environment authors
+- Keep PRs scoped
+- explain why the change improves the framework
+- include validation notes
+- call out compatibility implications explicitly
+
+## Good First Issues
+
+- new smoke tests
+- small environment expansions
+- docs and example improvements
+- CI or packaging polish
+- contributor ergonomics for environment authors

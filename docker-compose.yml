@@ -4,7 +4,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - PORT=8000
+      PORT: "8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
       interval: 30s
@@ -15,6 +15,11 @@ services:
     build: .
     command: ["python", "inference.py"]
     environment:
-      - API_BASE_URL=${API_BASE_URL:-https://router.huggingface.co/v1}
-      - MODEL_NAME=${MODEL_NAME:-gpt-4o-mini}
-      - HF_TOKEN=${HF_TOKEN:-}
+      API_BASE_URL: ${API_BASE_URL:-https://router.huggingface.co/v1}
+      MODEL_NAME: ${MODEL_NAME:-gpt-4o-mini}
+      HF_TOKEN: ${HF_TOKEN:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SEC_OPENENV_ENV: ${SEC_OPENENV_ENV:-cyber-vulnerability-triage}
+      SEC_OPENENV_TASK: ${SEC_OPENENV_TASK:-hard}
+      SEC_OPENENV_MODELS: ${SEC_OPENENV_MODELS:-}
+      SEC_OPENENV_EPISODES: ${SEC_OPENENV_EPISODES:-3}

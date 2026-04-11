@@ -7,194 +7,213 @@ sdk: docker
 app_port: 8000
 pinned: false
 license: mit
-short_description: Security benchmark framework for cyber triage
+short_description: Security-focused environment framework for AI agents
 ---
 
-<img width="40" height="40" alt="Sec-OpenEnv logo" src="assets/logo.svg" /> **Sec-OpenEnv**
-
-![Install](https://img.shields.io/badge/install-pip%20install%20--e%20.-1f6feb)
+[![CI](https://github.com/tejas/sec-openenv/actions/workflows/ci.yml/badge.svg)](https://github.com/tejas/sec-openenv/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776AB)
-![FastAPI](https://img.shields.io/badge/api-FastAPI-009688)
 ![License](https://img.shields.io/badge/license-MIT-0f172a)
-![OpenEnv](https://img.shields.io/badge/OpenEnv-compatible-475569)
-![Status](https://img.shields.io/badge/maturity-beta-b45309)
 
-Sec-OpenEnv is a **security environment framework** for building, serving, and evaluating structured security workflows. This repository currently ships one complete environment, **Cyber Vulnerability Triage**, and is organized so future environments, plugins, benchmarks, and training loops can grow around the same contract.
+# Sec-OpenEnv
 
-The benchmark itself is unchanged: an agent receives a suspicious web request, investigates through structured actions, and submits a final triage decision with deterministic grading. What changes here is the repository maturity around that benchmark: packaging, documentation, extensibility, examples, and contributor experience.
+Sec-OpenEnv turns security workflows into reproducible environments for AI agents.
 
-## Problem
+It is a security-focused environment framework inspired by OpenEnv principles: registry-driven environments, deterministic tasks, HTTP serving, and evaluation loops that make agent behavior benchmarkable instead of anecdotal.
 
-Most security-eval repos are either:
-
-- toy classification datasets with no workflow realism
-- custom demos that are hard to install, extend, compare, or benchmark
-
-Sec-OpenEnv fills the gap with a framework-shaped repository for **multi-step security reasoning**.
+![Architecture](docs/assets/architecture.svg)
 
 ## Why This Matters
 
-Security operations are not one-shot labels. Real triage involves context gathering, selective investigation, and operationally safe decisions. Sec-OpenEnv makes that workflow reproducible enough for research and structured enough for industry experimentation.
+Most security-agent repos stop at one of two places:
+
+- a one-off benchmark with framework language around it
+- a polished demo with no reusable environment contract
+
+Sec-OpenEnv is built to sit in the middle ground that actually compounds:
+
+- realistic security workflows packaged as environments
+- a single registry that drives discovery, serving, and metadata
+- a clean CLI and Python API for demos, evaluation, and future extensions
+- lightweight but real multi-domain coverage out of the box
+
+The goal is not to be a weaker OpenEnv clone. The goal is to bring OpenEnv-style environment discipline to security workflows, where reproducibility, evidence gathering, and safe operational decisions actually matter.
+
+## What Ships Today
+
+- `cyber-vulnerability-triage`: web application security triage over suspicious HTTP requests, with deterministic grading and an expanded dataset
+- `log-anomaly`: operational detection workflow for log triage, context review, and response recommendation
+
+Each environment includes:
+
+- a dataset
+- typed observation and action models
+- an environment class
+- a registry entry
+- a FastAPI server entrypoint
+- a minimal baseline agent for evaluation
 
 ## Architecture
 
 ```text
-                    +-----------------------------------+
-                    |           Sec-OpenEnv             |
-                    |  framework metadata + CLI + docs  |
-                    +-------------------+---------------+
-                                        |
-                                        v
-                +---------------------------------------------+
-                | Environment Module: Cyber Vulnerability     |
-                | Triage                                      |
-                |                                             |
-                |  Actions -> State -> Reward                 |
-                |  inspect_payload                            |
-                |  decode_obfuscation                         |
-                |  review_history                             |
-                |  check_source_reputation                    |
-                |  inspect_asset_context                      |
-                |  consult_playbook                           |
-                |  submit_triage                              |
-                +-------------------+-------------------------+
-                                    |
-               +--------------------+--------------------+
-               |                                         |
-               v                                         v
-     +-----------------------+                 +-----------------------+
-     | Deterministic Dataset |                 | FastAPI / OpenEnv API |
-     | env/data.py           |                 | /reset /step /state   |
-     | env/tasks.py          |                 | /metadata /health     |
-     +-----------------------+                 +-----------------------+
-                                    |
-                                    v
-                      +------------------------------+
-                      | Benchmarking / Evaluation    |
-                      | baseline agent + inference   |
-                      | examples + external tooling  |
-                      +------------------------------+
+                         +-----------------------------+
+                         |   sec-openenv CLI / API     |
+                         | list | info | serve | eval  |
+                         +-------------+---------------+
+                                       |
+                                       v
+                         +-----------------------------+
+                         |     Environment Registry    |
+                         | single source of truth for  |
+                         | metadata, entrypoints, app  |
+                         +------+------+---------------+
+                                |      |
+                +---------------+      +------------------+
+                |                                      |
+                v                                      v
+   +-------------------------------+      +-------------------------------+
+   | Cyber Vulnerability Triage    |      | Log Anomaly Investigation      |
+   | request -> evidence -> action |      | event -> context -> response   |
+   +---------------+---------------+      +---------------+---------------+
+                   |                                      |
+                   +------------------+-------------------+
+                                      |
+                                      v
+                     +-----------------------------------+
+                     | FastAPI Serving + Evaluation Loop |
+                     | /reset /step /tasks /benchmark    |
+                     +-----------------------------------+
 ```
 
-## Key Features
+Assets:
 
-- **Framework-style layout** with `src/sec_openenv/` for scalable growth
-- **Deterministic security environment** for reproducible evaluation
-- **OpenEnv-compatible API** for local, Docker, and hosted deployment
-- **Contributor-ready docs** covering architecture, extensibility, security, and roadmap
-- **Compatibility-preserving structure** so the existing benchmark logic remains intact
+- [Architecture diagram](docs/assets/architecture.svg)
+- [CLI screenshot](docs/assets/cli-screenshot.svg)
+- [API response example](docs/assets/api-response-example.json)
 
-## Quickstart
+## Repo Layout
+
+```text
+src/sec_openenv/
+  core/           shared framework contracts and loaders
+  framework/      registry and environment discovery
+  environments/   bundled security environments
+  server/         reusable FastAPI app factory
+  evaluation/     run_episode() and multi-model evaluation
+
+env/              compatibility shims for the original benchmark surface
+server/           compatibility server entrypoints
+examples/         runnable demos and evaluation scripts
+tests/            environment, registry, and API contract checks
+docs/assets/      architecture and demo assets
+```
+
+## Demo Commands
+
+Install locally:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip setuptools wheel
 python -m pip install -e ".[dev]"
-sec-openenv serve
 ```
 
-Smoke test:
+Optional OpenAI-compatible client for `evaluate_models` / LLM baselines:
+
+```bash
+python -m pip install -e ".[llm]"
+```
+
+Discover the framework:
+
+```bash
+sec-openenv list
+sec-openenv info --environment cyber-vulnerability-triage
+sec-openenv info --environment log-anomaly
+```
+
+Run a local episode:
+
+```bash
+python examples/benchmark/run_single_episode.py
+```
+
+Run multi-model evaluation:
+
+```bash
+python examples/evaluate_multiple_models.py
+```
+
+Serve an environment:
+
+```bash
+sec-openenv serve --environment cyber-vulnerability-triage --port 8000
+sec-openenv serve --environment log-anomaly --port 8001
+```
+
+Probe the API:
 
 ```bash
 curl http://localhost:8000/health
+curl http://localhost:8000/benchmark
 curl -X POST http://localhost:8000/reset \
-  -H 'Content-Type: application/json' \
-  -d '{"task":"hard"}'
+  -H "Content-Type: application/json" \
+  -d '{"task":"hard","seed":2}'
+curl -X POST http://localhost:8000/step \
+  -H "Content-Type: application/json" \
+  -d '{"action_type":"inspect_payload"}'
 ```
 
-Run a realistic example:
+## Real-World Use Case
 
-```bash
-python examples/clients/async_api_walkthrough.py
-```
+Imagine evaluating an agent that acts like an application security analyst:
 
-Run the baseline benchmark:
+1. It receives a suspicious HTTP request from a shared queue.
+2. It inspects payloads, historical activity, and asset context.
+3. It submits a triage with vulnerability type, severity, and response action.
+4. The result is scored deterministically, so prompt changes and model upgrades can be compared cleanly.
 
-```bash
-python inference.py
-```
+That same framework surface can host an email security workflow or a detection-engineering workflow without changing the CLI or evaluation loop.
 
-## Example Usage
+## Comparison
+
+Compared with a typical security benchmark repo:
+
+- Sec-OpenEnv has multiple environments under one contract, not one benchmark plus scaffolding.
+- Registry metadata powers `list`, `info`, and `serve`, so serving is not hardcoded to one app.
+- Evaluation is reusable across environments through `run_episode()` and `evaluate_models()`.
+- The repo ships CI, contribution docs, roadmap, changelog, and visual assets to feel maintainable, not disposable.
+
+Compared with a typical polished demo repo:
+
+- environments are deterministic and testable
+- the API surface is stable and scriptable
+- new domains can be added without rewriting the framework layer
+
+## Python API
 
 ```python
-import asyncio
+from sec_openenv import run_episode, evaluate_models
 
-from cyber_vulnerability_triage import CyberVulnerabilityTriageEnv
+trace = run_episode("cyber-vulnerability-triage", task="hard", seed=2)
+print(trace.score, trace.steps)
 
-
-async def main() -> None:
-    async with CyberVulnerabilityTriageEnv(base_url="http://localhost:8000") as env:
-        result = await env.reset(task="hard")
-        print(result.observation.request_id)
-
-        await env.inspect_payload()
-        await env.review_history()
-
-        final = await env.submit_triage(
-            vulnerability_type="xss",
-            severity="medium",
-            response_action="sanitize",
-            explanation="Payload and context indicate reflected script injection.",
-        )
-        print(final.done, final.reward)
-
-
-asyncio.run(main())
+results = evaluate_models(
+    "cyber-vulnerability-triage",
+    ["gpt-4o-mini", "gpt-4.1-mini"],
+    task="hard",
+    episodes=2,
+)
+print(results)
 ```
 
-## Real Usage Flows
+## Extending The Framework
 
-- **Researcher benchmark run**: start the server, run `python inference.py`, compare `easy`, `medium`, and `hard`.
-- **Platform demo**: deploy the FastAPI server, connect a client, replay deterministic cases for demos.
-- **Environment authoring**: add new modules under `src/sec_openenv/environments/`, register them, and document them.
+To add a new environment:
 
-## Why This Is Different
+1. Create a package under `src/sec_openenv/environments/<your_env>/`.
+2. Add typed models, a dataset, an environment class, a baseline agent, and a server module.
+3. Register it in `src/sec_openenv/framework/registry.py`.
+4. Add one example and one smoke test.
 
-- It treats a security benchmark like a **framework module**, not a script dump.
-- It is designed for **experimentation, benchmarking, and training** from the same foundation.
-- It includes the ecosystem signals maintainers, researchers, and adopters look for before taking a project seriously.
-
-## Repository Structure
-
-```text
-.
-├── src/
-│   ├── sec_openenv/
-│   │   ├── cli.py
-│   │   ├── core/
-│   │   ├── framework/
-│   │   ├── config/
-│   │   └── environments/
-│   │       └── cyber_vulnerability_triage/
-│   └── cyber_vulnerability_triage/
-│       └── server/
-├── env/
-├── graders/
-├── server/
-├── examples/
-├── docs/
-├── rfcs/
-├── configs/
-├── tests/
-└── assets/
-```
-
-## Documentation Map
-
-- [docs/architecture.md](docs/architecture.md)
-- [docs/environments.md](docs/environments.md)
-- [docs/extensibility.md](docs/extensibility.md)
-- [docs/security-model.md](docs/security-model.md)
-- [docs/roadmap.md](docs/roadmap.md)
-- [rfcs/0001-environment-registry.md](rfcs/0001-environment-registry.md)
-- [rfcs/0002-evaluation-traces.md](rfcs/0002-evaluation-traces.md)
-
-## Screenshots And Demo Placeholders
-
-- `docs/assets/server-home.png`
-- `docs/assets/openapi-docs.png`
-- `docs/assets/benchmark-run.png`
+The registry is the single source of truth. If an environment is not in the registry, it is not part of the framework surface.
 
 ## Ecosystem Signals
 
@@ -202,19 +221,11 @@ asyncio.run(main())
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - [ROADMAP.md](ROADMAP.md)
 - [CHANGELOG.md](CHANGELOG.md)
-- [LICENSE](LICENSE)
-- [.env.example](.env.example)
-- [.github/ISSUE_TEMPLATE/bug_report.md](.github/ISSUE_TEMPLATE/bug_report.md)
-- [.github/ISSUE_TEMPLATE/feature_request.md](.github/ISSUE_TEMPLATE/feature_request.md)
-- [.github/pull_request_template.md](.github/pull_request_template.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/extensibility.md](docs/extensibility.md)
 
-## Contributor Call To Action
+## Validation
 
-High-impact contributions include:
-
-- new security environments
-- stronger eval tooling
-- more deterministic cases and tests
-- better docs, demos, and deployment recipes
-
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), and use `rfcs/` for bigger design ideas.
+```bash
+pytest
+```

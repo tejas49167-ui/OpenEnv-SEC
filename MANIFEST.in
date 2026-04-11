@@ -11,4 +11,6 @@ recursive-include configs *.yaml
 recursive-include server *.py
 recursive-include docs *.md
 recursive-include docs *.py
+recursive-include docs/assets *.svg
+recursive-include docs/assets *.json
 recursive-include rfcs *.md

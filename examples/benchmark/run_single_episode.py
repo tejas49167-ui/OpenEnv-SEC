@@ -1,24 +1,26 @@
 from __future__ import annotations
 
-from agent.baseline_agent import BaselineTriageAgent
-from env.environment import CyberVulnerabilityTriageEnvironment
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from sec_openenv import run_episode
 
 
 def main() -> None:
-    env = CyberVulnerabilityTriageEnvironment(task="hard")
-    agent = BaselineTriageAgent()
-
-    observation = env.reset(task="hard", seed=2)
-    print(f"starting request={observation.request_id}")
-
-    while not observation.done:
-        action = agent.decide(observation)
-        print("action:", action.action_type)
-        observation = env.step(action)
-
-    reward = observation.metadata.get("reward", {})
-    print("final_score:", reward.get("score", observation.reward))
-    print("feedback:", reward.get("feedback", ""))
+    trace = run_episode("cyber-vulnerability-triage", task="hard", seed=2)
+    print(f"environment: {trace.environment}")
+    print(f"task: {trace.task}")
+    print(f"steps: {trace.steps}")
+    print(f"final_score: {trace.score}")
+    print(f"success: {trace.success}")
+    print(f"final_request: {trace.final_observation['request_id']}")
 
 
 if __name__ == "__main__":

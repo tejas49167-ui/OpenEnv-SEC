@@ -32,17 +32,23 @@ class HardGrader(BaseGrader):
         if action.severity != example.severity:
             safety_penalty += 0.05
 
-        terminal = vulnerability + severity + response_action + investigation + explanation + efficiency
+        terminal = (
+            vulnerability + severity + response_action + investigation + explanation + efficiency
+        )
         score = clamp_open_unit_interval(terminal - safety_penalty)
         feedback = (
             f"Hard triage complete for {example.request_id}. "
             f"response_match={response_action > 0}, explanation_credit={explanation:.2f}."
         )
-        return score, {
-            "step": 0.0,
-            "terminal": terminal,
-            "investigation": investigation,
-            "decision": vulnerability + severity + response_action + explanation,
-            "efficiency": efficiency,
-            "safety_penalty": safety_penalty,
-        }, feedback
+        return (
+            score,
+            {
+                "step": 0.0,
+                "terminal": terminal,
+                "investigation": investigation,
+                "decision": vulnerability + severity + response_action + explanation,
+                "efficiency": efficiency,
+                "safety_penalty": safety_penalty,
+            },
+            feedback,
+        )

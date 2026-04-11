@@ -15,7 +15,9 @@ GRADERS = {
 }
 
 
-def compute_reward(task: TaskName, action: Action, example: RequestExample, state: EnvironmentState) -> Reward:
+def compute_reward(
+    task: TaskName, action: Action, example: RequestExample, state: EnvironmentState
+) -> Reward:
     grader = GRADERS[task]
     reward = grader.build_reward(action, example, state)
     reward.score = clamp_open_unit_interval(reward.score)

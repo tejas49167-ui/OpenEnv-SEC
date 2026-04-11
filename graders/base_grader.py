@@ -22,7 +22,11 @@ class BaseGrader(ABC):
         raise NotImplementedError
 
     def investigation_credit(self, example: RequestExample, state: EnvironmentState) -> float:
-        useful_reveals = sum(1 for action in example.useful_actions if self._artifact_for_action(action) in state.revealed_artifacts)
+        useful_reveals = sum(
+            1
+            for action in example.useful_actions
+            if self._artifact_for_action(action) in state.revealed_artifacts
+        )
         required = TASKS[self.task_name].required_artifacts_for_full_credit
         return clamp_open_unit_interval(min(1.0, useful_reveals / max(1, required)))
 
@@ -35,14 +39,30 @@ class BaseGrader(ABC):
         if not action.explanation.strip():
             return clamp_open_unit_interval(0.0)
         explanation = action.explanation.lower()
-        matched_keywords = sum(1 for keyword in example.explanation_keywords if keyword in explanation)
+        matched_keywords = sum(
+            1 for keyword in example.explanation_keywords if keyword in explanation
+        )
         mentions_decision = any(
             token in explanation
-            for token in ["xss", "sql", "command", "traversal", "safe", "block", "sanitize", "allow", "monitor"]
+            for token in [
+                "xss",
+                "sql",
+                "command",
+                "traversal",
+                "safe",
+                "block",
+                "sanitize",
+                "allow",
+                "monitor",
+            ]
         )
-        return clamp_open_unit_interval(1.0 if matched_keywords >= 2 and mentions_decision and len(explanation) >= 40 else 0.0)
+        return clamp_open_unit_interval(
+            1.0 if matched_keywords >= 2 and mentions_decision and len(explanation) >= 40 else 0.0
+        )
 
-    def build_reward(self, action: Action, example: RequestExample, state: EnvironmentState) -> Reward:
+    def build_reward(
+        self, action: Action, example: RequestExample, state: EnvironmentState
+    ) -> Reward:
         score, components, feedback = self.grade(action, example, state)
         return Reward(
             score=clamp_open_unit_interval(score),

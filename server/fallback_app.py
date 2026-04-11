@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+from env.data import load_examples
 from env.environment import CyberVulnerabilityTriageEnvironment
-from env.models import Action, TASK_LABELS, build_environment_metadata
+from env.models import Action, build_environment_metadata
 from env.tasks import TASKS
 
 try:
@@ -17,7 +18,7 @@ except ImportError:
 
 
 class ResetRequest(BaseModel):
-    task: Optional[Literal["easy", "medium", "hard"]] = None
+    task: Literal["easy", "medium", "hard"] | None = None
 
 
 def create_fallback_app() -> FastAPI:
@@ -37,7 +38,7 @@ def create_fallback_app() -> FastAPI:
         return build_environment_metadata().model_dump()
 
     @app.post("/reset")
-    def reset(request: Optional[ResetRequest] = None) -> dict:
+    def reset(request: ResetRequest | None = None) -> dict:
         observation = environment.reset(task=request.task if request else None)
         return {
             "observation": observation.model_dump(),
@@ -79,7 +80,7 @@ def create_fallback_app() -> FastAPI:
         return {
             "name": "cyber-vulnerability-triage",
             "domain": "application security incident triage",
-            "episodes": 12,
+            "episodes": len(load_examples()),
             "tasks": list(TASKS.keys()),
         }
 

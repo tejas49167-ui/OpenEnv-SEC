@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Dict, List, Optional
-
-from openai import OpenAI
+from typing import Any
 
 from env.models import Action, Observation
 
 
 class BaselineTriageAgent:
-    def __init__(self, client: Optional[OpenAI] = None, model_name: str = "gpt-4o-mini") -> None:
+    def __init__(self, client: Any = None, model_name: str = "gpt-4o-mini") -> None:
         self.client = client
         self.model_name = model_name
 
@@ -55,7 +53,7 @@ class BaselineTriageAgent:
             raise ValueError("No JSON object found in model response.")
         return json.loads(content[start : end + 1])
 
-    def _detect(self, observation: Observation) -> Dict[str, str]:
+    def _detect(self, observation: Observation) -> dict[str, str]:
         request_text = " ".join(
             [
                 observation.path,
@@ -87,14 +85,17 @@ class BaselineTriageAgent:
                 "response_action": "block",
             }
         if re.search(r"(?i)(;|&&)\s*(ls|whoami|cat|id)\b", combined_text) or (
-            "command injection" in lower and any(token in request_lower for token in ["/api/ping", "/api/archive"])
+            "command injection" in lower
+            and any(token in request_lower for token in ["/api/ping", "/api/archive"])
         ):
             return {
                 "vulnerability_type": "command_injection",
                 "severity": "high",
                 "response_action": "block",
             }
-        if any(token in lower for token in ["../", "..%2f", "etc/passwd", "auth.log", "path traversal"]):
+        if any(
+            token in lower for token in ["../", "..%2f", "etc/passwd", "auth.log", "path traversal"]
+        ):
             return {
                 "vulnerability_type": "path_traversal",
                 "severity": "high",
@@ -106,9 +107,13 @@ class BaselineTriageAgent:
             "response_action": "allow",
         }
 
-    def _preferred_action_sequence(self, observation: Observation, prediction: Dict[str, str]) -> List[str]:
+    def _preferred_action_sequence(
+        self, observation: Observation, prediction: dict[str, str]
+    ) -> list[str]:
         sequence = ["inspect_payload"]
-        raw = " ".join([json.dumps(observation.query_params, sort_keys=True), observation.body]).lower()
+        raw = " ".join(
+            [json.dumps(observation.query_params, sort_keys=True), observation.body]
+        ).lower()
 
         if any(token in raw for token in ["%3c", "&#x3c", "%20%26%26", "..%2f", "/**/"]):
             sequence.append("decode_obfuscation")
@@ -123,7 +128,7 @@ class BaselineTriageAgent:
             sequence.append("consult_playbook")
         return sequence
 
-    def _build_explanation(self, prediction: Dict[str, str]) -> str:
+    def _build_explanation(self, prediction: dict[str, str]) -> str:
         vulnerability = prediction["vulnerability_type"]
         response = prediction["response_action"]
         severity = prediction["severity"]
