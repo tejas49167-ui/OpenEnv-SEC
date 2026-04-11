@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Literal
 
+<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException
+=======
+from fastapi import FastAPI
+>>>>>>> cstech
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -19,8 +23,11 @@ except ImportError:
 
 class ResetRequest(BaseModel):
     task: Literal["easy", "medium", "hard"] | None = None
+<<<<<<< HEAD
     seed: int | None = None
     case_index: int | None = None
+=======
+>>>>>>> cstech
 
 
 def create_fallback_app() -> FastAPI:
@@ -41,11 +48,15 @@ def create_fallback_app() -> FastAPI:
 
     @app.post("/reset")
     def reset(request: ResetRequest | None = None) -> dict:
+<<<<<<< HEAD
         observation = environment.reset(
             task=request.task if request else None,
             seed=request.seed if request else None,
             case_index=request.case_index if request else None,
         )
+=======
+        observation = environment.reset(task=request.task if request else None)
+>>>>>>> cstech
         return {
             "observation": observation.model_dump(),
             "reward": observation.reward,
@@ -54,10 +65,14 @@ def create_fallback_app() -> FastAPI:
 
     @app.post("/step")
     def step(action: Action) -> dict:
+<<<<<<< HEAD
         try:
             observation = environment.step(action)
         except RuntimeError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+=======
+        observation = environment.step(action)
+>>>>>>> cstech
         return {
             "observation": observation.model_dump(),
             "reward": observation.reward,

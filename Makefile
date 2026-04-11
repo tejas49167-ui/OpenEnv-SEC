@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 .PHONY: help venv install dev start server framework-server check test lint format docs smoke demo docker-build docker-run clean
+=======
+.PHONY: help venv install dev server framework-server test lint format docs smoke docker-build docker-run clean
+>>>>>>> cstech
 
 VENV ?= .venv
 PY ?= $(VENV)/bin/python
@@ -11,16 +15,24 @@ help:
 	@echo "  venv         Create .venv"
 	@echo "  install      Install package"
 	@echo "  dev          Install dev extras"
+<<<<<<< HEAD
 	@echo "  start        Run the default local API server"
 	@echo "  server       Run API server"
 	@echo "  framework-server Run API server through sec-openenv CLI"
 	@echo "  check        Run lint and tests"
+=======
+	@echo "  server       Run API server"
+	@echo "  framework-server Run API server through sec-openenv CLI"
+>>>>>>> cstech
 	@echo "  test         Run tests"
 	@echo "  lint         Run ruff lint"
 	@echo "  format       Run ruff format"
 	@echo "  docs         Build docs"
 	@echo "  smoke        Run health and reset smoke checks"
+<<<<<<< HEAD
 	@echo "  demo         Run the basic HTTP API walkthrough"
+=======
+>>>>>>> cstech
 	@echo "  docker-build Build docker image"
 	@echo "  docker-run   Run docker image (API)"
 	@echo "  clean        Remove __pycache__, *.pyc, local caches (safe before git commit)"
@@ -35,16 +47,22 @@ install:
 dev:
 	$(PIP) install -e ".[dev]"
 
+<<<<<<< HEAD
 start: server
 
+=======
+>>>>>>> cstech
 server:
 	$(PY) -m uvicorn server.app:app --host 0.0.0.0 --port 8000
 
 framework-server:
 	$(PY) -m sec_openenv.cli serve
 
+<<<<<<< HEAD
 check: lint test
 
+=======
+>>>>>>> cstech
 test:
 	$(PYTEST)
 
@@ -61,9 +79,12 @@ smoke:
 	curl -fsS http://localhost:8000/health
 	curl -fsS -X POST http://localhost:8000/reset -H 'Content-Type: application/json' -d '{"task":"easy"}'
 
+<<<<<<< HEAD
 demo:
 	$(PY) examples/clients/http_api_smoke.py
 
+=======
+>>>>>>> cstech
 docker-build:
 	docker build -t cyber-openenv .
 

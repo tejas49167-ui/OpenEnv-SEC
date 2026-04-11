@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .DS_Store
 .env
 .env.*
@@ -24,3 +25,17 @@ pip-wheel-metadata/
 
 .idea/
 .vscode/
+=======
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+.coverage
+htmlcov/
+docs/build/
+dist/
+build/
+outputs/
+>>>>>>> cstech

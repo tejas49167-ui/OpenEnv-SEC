@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Literal
 
+<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException, Request
+=======
+from fastapi import FastAPI
+>>>>>>> cstech
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -19,14 +23,18 @@ except ImportError:
 
 class ResetRequest(BaseModel):
     task: Literal["easy", "medium", "hard"] | None = None
+<<<<<<< HEAD
     seed: int | None = None
     case_index: int | None = None
+=======
+>>>>>>> cstech
 
 
 app = FastAPI(title="Cybersecurity Alert Triage OpenEnv", version="2.1.0")
 environment = CyberVulnerabilityTriageEnvironment()
 
 
+<<<<<<< HEAD
 @app.middleware("http")
 async def support_hugging_face_base_path(request: Request, call_next):
     if request.scope["path"].startswith("/web"):
@@ -36,12 +44,19 @@ async def support_hugging_face_base_path(request: Request, call_next):
     return await call_next(request)
 
 
+=======
+>>>>>>> cstech
 def health() -> dict[str, str]:
     return {"status": "healthy"}
 
 
+<<<<<<< HEAD
 def root(base_path: str = "") -> str:
     return render_landing_page(base_path=base_path)
+=======
+def root() -> str:
+    return render_landing_page()
+>>>>>>> cstech
 
 
 def metadata() -> dict:
@@ -78,8 +93,13 @@ def health_route() -> dict[str, str]:
 
 
 @app.get("/", response_class=HTMLResponse)
+<<<<<<< HEAD
 def root_route(request: Request) -> str:
     return root(base_path=request.scope.get("root_path", ""))
+=======
+def root_route() -> str:
+    return root()
+>>>>>>> cstech
 
 
 @app.get("/metadata")
@@ -99,11 +119,15 @@ def benchmark_route() -> dict[str, object]:
 
 @app.post("/reset")
 def reset(request: ResetRequest | None = None) -> dict[str, object]:
+<<<<<<< HEAD
     observation = environment.reset(
         task=request.task if request else None,
         seed=request.seed if request else None,
         case_index=request.case_index if request else None,
     )
+=======
+    observation = environment.reset(task=request.task if request else None)
+>>>>>>> cstech
     return {
         "observation": observation.model_dump(),
         "reward": observation.reward,
@@ -113,10 +137,14 @@ def reset(request: ResetRequest | None = None) -> dict[str, object]:
 
 @app.post("/step")
 def step(action: Action) -> dict[str, object]:
+<<<<<<< HEAD
     try:
         observation = environment.step(action)
     except RuntimeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+=======
+    observation = environment.step(action)
+>>>>>>> cstech
     return {
         "observation": observation.model_dump(),
         "reward": observation.reward,
