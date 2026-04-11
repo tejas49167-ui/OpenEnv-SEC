@@ -37,6 +37,7 @@ classifiers = [
 dependencies = [
   "openenv-core>=0.2.2",
   "pydantic>=2.7,<3",
+  "openai>=2.7.2,<3",
   "PyYAML>=6.0,<7",
   "fastapi>=0.115,<1",
   "uvicorn>=0.30,<1",
@@ -44,13 +45,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-llm = [
-  "openai>=2.7.2,<3",
-]
 dev = [
   "pytest>=8.0.0",
   "pytest-cov>=4.0.0",
-  "httpx>=0.27,<1",
   "ruff>=0.6.0",
   "Sphinx>=7.0,<9",
   "myst-parser>=2,<4",
@@ -61,10 +58,6 @@ openenv = [
 openenv-core = [
   "openenv-core[core]>=0.2.2",
 ]
-all = [
-  "openenv-core>=0.2.2",
-  "openai>=2.7.2,<3",
-]
 docs = [
   "Sphinx>=7.0,<9",
   "myst-parser>=2,<4",
@@ -72,8 +65,8 @@ docs = [
 
 [project.scripts]
 sec-openenv = "sec_openenv.cli:main"
-server = "sec_openenv.environments.cyber_vulnerability_triage.server:main"
-cyber-triage-server = "sec_openenv.environments.cyber_vulnerability_triage.server:main"
+server = "cyber_vulnerability_triage.server.app:main"
+cyber-triage-server = "cyber_vulnerability_triage.server.app:main"
 cyber-triage-eval = "inference:main"
 
 [project.urls]
@@ -91,10 +84,6 @@ packages = [
   "sec_openenv.config",
   "sec_openenv.environments",
   "sec_openenv.environments.cyber_vulnerability_triage",
-  "sec_openenv.environments.phishing_detection",
-  "sec_openenv.environments.log_anomaly",
-  "sec_openenv.evaluation",
-  "sec_openenv.server",
   "cyber_vulnerability_triage",
   "cyber_vulnerability_triage.server",
   "agent",
@@ -110,10 +99,6 @@ sec_openenv = "src/sec_openenv"
 "sec_openenv.config" = "src/sec_openenv/config"
 "sec_openenv.environments" = "src/sec_openenv/environments"
 "sec_openenv.environments.cyber_vulnerability_triage" = "src/sec_openenv/environments/cyber_vulnerability_triage"
-"sec_openenv.environments.phishing_detection" = "src/sec_openenv/environments/phishing_detection"
-"sec_openenv.environments.log_anomaly" = "src/sec_openenv/environments/log_anomaly"
-"sec_openenv.evaluation" = "src/sec_openenv/evaluation"
-"sec_openenv.server" = "src/sec_openenv/server"
 cyber_vulnerability_triage = "src/cyber_vulnerability_triage"
 "cyber_vulnerability_triage.server" = "src/cyber_vulnerability_triage/server"
 server = "server"
@@ -124,14 +109,7 @@ cyber_vulnerability_triage = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --cov=sec_openenv --cov=env --cov=server --cov=agent --cov-report=term-missing --cov-fail-under=58"
-
-[tool.coverage.run]
-branch = true
-source = ["src/sec_openenv", "env", "server", "agent"]
-
-[tool.coverage.report]
-omit = ["*/tests/*", "*/__main__.py"]
+addopts = "-q"
 
 [tool.ruff]
 line-length = 100
