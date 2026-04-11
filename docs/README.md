@@ -1,9 +1,24 @@
 # Documentation
 
-This directory mirrors the OpenEnv-style documentation layout in a lightweight
-form for the Cyber Vulnerability Triage environment.
+The `docs/` directory is the framework knowledge base for Sec-OpenEnv.
 
-- `docs/source/index.md` introduces the project.
-- `docs/source/quickstart.md` covers local setup and common commands.
-- `docs/source/architecture.md` explains the package and benchmark layout.
-- `docs/source/environments.md` explains the environment package layout.
+## Canonical Documents
+
+- `architecture.md`
+- `environments.md`
+- `extensibility.md`
+- `security-model.md`
+- `roadmap.md`
+
+## Supporting Docs
+
+- `source/`: Sphinx entrypoints and lightweight wrappers
+- `README.md`: this documentation index
+
+## Build
+
+```bash
+make -C docs html
+```
+
+Generated HTML is written to `docs/build/html/`.

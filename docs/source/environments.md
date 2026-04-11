@@ -1,13 +1,12 @@
-# Environment Layout
+# Environments
 
-The canonical package is `cyber_vulnerability_triage/`, which mirrors the
-structure used by OpenEnv example environments:
+See the full reference at [`docs/environments.md`](../environments.md).
 
-- `client.py` exposes the typed environment client
-- `models.py` exposes public action and observation models
-- `server/app.py` builds the FastAPI application
-- `server/environment.py` aliases the actual environment implementation
+## Current Bundled Environment
 
-The legacy root modules remain as compatibility shims so existing imports and
-tests continue to work.
+- `cyber-vulnerability-triage`: a deterministic environment for web security alert triage with `easy`, `medium`, and `hard` task definitions.
 
+## Framework Layout
+
+- `src/sec_openenv/environments/` is the canonical home for framework-packaged environments.
+- `src/cyber_vulnerability_triage/` preserves backward-compatible imports for existing users.

@@ -8,8 +8,12 @@ from pydantic import BaseModel
 
 from env.environment import CyberVulnerabilityTriageEnvironment
 from env.models import Action, TASK_LABELS, build_environment_metadata
-from server.landing_page import render_landing_page
 from env.tasks import TASKS
+
+try:
+    from .landing_page import render_landing_page
+except ImportError:
+    from server.landing_page import render_landing_page
 
 
 class ResetRequest(BaseModel):

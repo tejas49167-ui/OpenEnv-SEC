@@ -1,4 +1,4 @@
-project = "Cyber Vulnerability Triage"
+project = "Sec-OpenEnv"
 author = "Tejas"
 extensions = ["myst_parser"]
 source_suffix = {

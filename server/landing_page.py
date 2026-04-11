@@ -139,11 +139,12 @@ def render_landing_page() -> str:
   <body>
     <main>
       <section class="hero">
-        <span class="eyebrow">OpenEnv API</span>
+        <span class="eyebrow">Sec-OpenEnv</span>
         <h1>Cyber Vulnerability Triage</h1>
         <p>
-          This deployment is an API-first benchmark for application security alert triage.
-          Use the links below to inspect health, metadata, tasks, and benchmark endpoints.
+          This deployment exposes the flagship Sec-OpenEnv security environment:
+          realistic alert triage with structured analyst actions, deterministic
+          grading, and a deployment-ready OpenEnv-compatible API.
         </p>
         <div class="actions">
           <a class="button primary" href="/docs">Open API Docs</a>
@@ -153,6 +154,15 @@ def render_landing_page() -> str:
       </section>
 
       <section class="grid">
+        <article class="card">
+          <h2>Why It’s Useful</h2>
+          <ul>
+            <li>Models a realistic analyst workflow, not a one-shot classifier.</li>
+            <li>Uses deterministic cases for reproducible evaluation.</li>
+            <li>Works as both a browser-friendly demo and a framework-ready API service.</li>
+          </ul>
+        </article>
+
         <article class="card">
           <h2>Core Endpoints</h2>
           <ul>

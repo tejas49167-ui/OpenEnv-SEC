@@ -9,7 +9,10 @@ from fastapi.responses import HTMLResponse
 try:
     from openenv.core.env_server.http_server import create_app
 except ImportError:  # pragma: no cover
-    from server.fallback_app import create_fallback_app
+    try:
+        from .fallback_app import create_fallback_app
+    except ImportError:
+        from server.fallback_app import create_fallback_app
 
     app = create_fallback_app()
 else:
@@ -32,7 +35,11 @@ else:
     )
 
 from env.tasks import TASKS
-from server.landing_page import render_landing_page
+
+try:
+    from .landing_page import render_landing_page
+except ImportError:
+    from server.landing_page import render_landing_page
 
 router = APIRouter(tags=["benchmark"])
 

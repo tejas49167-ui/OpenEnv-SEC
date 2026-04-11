@@ -10,11 +10,13 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY pyproject.toml README.md /app/
+COPY pyproject.toml README.md LICENSE MANIFEST.in /app/
+COPY src /app/src
 COPY agent /app/agent
 COPY env /app/env
 COPY graders /app/graders
 COPY server /app/server
+COPY configs /app/configs
 COPY inference.py app.py client.py models.py __init__.py openenv.yaml /app/
 
 RUN pip install --no-cache-dir ".[openenv]"

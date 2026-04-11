@@ -1,4 +1,4 @@
-.PHONY: help venv install dev server test lint format docker-build docker-run clean
+.PHONY: help venv install dev server framework-server test lint format docs smoke docker-build docker-run clean
 
 VENV ?= .venv
 PY ?= $(VENV)/bin/python
@@ -12,9 +12,12 @@ help:
 	@echo "  install      Install package"
 	@echo "  dev          Install dev extras"
 	@echo "  server       Run API server"
+	@echo "  framework-server Run API server through sec-openenv CLI"
 	@echo "  test         Run tests"
 	@echo "  lint         Run ruff lint"
 	@echo "  format       Run ruff format"
+	@echo "  docs         Build docs"
+	@echo "  smoke        Run health and reset smoke checks"
 	@echo "  docker-build Build docker image"
 	@echo "  docker-run   Run docker image (API)"
 	@echo "  clean        Remove __pycache__, *.pyc, local caches (safe before git commit)"
@@ -32,6 +35,9 @@ dev:
 server:
 	$(PY) -m uvicorn server.app:app --host 0.0.0.0 --port 8000
 
+framework-server:
+	$(PY) -m sec_openenv.cli serve
+
 test:
 	$(PYTEST)
 
@@ -40,6 +46,13 @@ lint:
 
 format:
 	$(RUFF) format .
+
+docs:
+	make -C docs html
+
+smoke:
+	curl -fsS http://localhost:8000/health
+	curl -fsS -X POST http://localhost:8000/reset -H 'Content-Type: application/json' -d '{"task":"easy"}'
 
 docker-build:
 	docker build -t cyber-openenv .

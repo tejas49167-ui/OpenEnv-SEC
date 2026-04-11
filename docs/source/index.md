@@ -1,17 +1,20 @@
-# Cyber Vulnerability Triage
+# Sec-OpenEnv
 
-An OpenEnv-compatible benchmark for multi-step cybersecurity alert triage.
+Sec-OpenEnv is a framework-oriented repository for security environments that can be benchmarked, served, and extended using a shared OpenEnv-style contract.
 
-This project keeps the original idea intact:
+The current flagship environment, **Cyber Vulnerability Triage**, preserves the original benchmark semantics:
 
-- analysts inspect suspicious HTTP requests
-- the environment reveals evidence through structured actions
-- agents submit a final triage decision with severity and response guidance
+- suspicious HTTP requests are presented as analyst queue items
+- agents investigate using structured actions
+- final triage decisions are graded deterministically
 
-For the runtime API, use `server.app:app`. For the OpenEnv-style package API,
-use `cyber_vulnerability_triage`.
+```{toctree}
+:maxdepth: 1
 
-See also:
-
-- `quickstart.md` for local setup and example commands
-- `architecture.md` for the package and benchmark layout
+quickstart
+architecture
+environments
+extensibility
+security-model
+roadmap
+```
