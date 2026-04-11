@@ -1,401 +1,230 @@
-# <img width="35" height="35" alt="image" src="https://github.com/user-attachments/assets/2700a971-e5d6-4036-b03f-2f89c9791609" /> OpenEnv: Agentic Execution Environments
-
-An e2e framework for creating, deploying and using isolated execution environments for agentic RL training, built using Gymnasium style simple APIs.
-
-[![PyPI](https://img.shields.io/pypi/v/openenv-core?color=blue)](https://pypi.org/project/openenv-core/)
-[![Discord](https://img.shields.io/badge/Discord-OpenEnv-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/YsTYBh6PD9)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meta-pytorch/OpenEnv/blob/main/examples/OpenEnv_Tutorial.ipynb)
-[![Docs](https://img.shields.io/badge/Docs-Explore-blue?logo=readthedocs&logoColor=white)](https://meta-pytorch.org/OpenEnv/)
-
+---
+title: Sec-OpenEnv
+emoji: 🛡️
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 8000
+pinned: false
+license: mit
+short_description: Security-focused environment framework for AI agents
 ---
 
-**🚀 Featured Example:** Train LLMs to play BlackJack using [torchforge](https://github.com/meta-pytorch/torchforge) (PyTorch's agentic RL framework): [`examples/grpo_blackjack/`](examples/grpo_blackjack/)
 
-**🔥 Zero to Hero Tutorial:** End to end tutorial from our [GPU Mode](tutorial/README.md) lecture and other hackathons.
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB)
+![License](https://img.shields.io/badge/license-MIT-0f172a)
 
-## Quick Start
+# Sec-OpenEnv
 
-Install the OpenEnv core package:
+Sec-OpenEnv turns security workflows into reproducible environments for AI agents.
 
-```bash
-pip install openenv-core
-```
+It is a security-focused environment framework inspired by OpenEnv principles: registry-driven environments, deterministic tasks, HTTP serving, and evaluation loops that make agent behavior benchmarkable instead of anecdotal.
 
-Install an environment client (e.g., Echo):
+![Architecture](docs/assets/architecture.svg)
 
-```bash
-pip install git+https://huggingface.co/spaces/openenv/echo_env
-```
+## Why This Matters
 
-Then use the environment:
+Most security-agent repos stop at one of two places:
 
-```python
-import asyncio
-from echo_env import EchoAction, EchoEnv
+- a one-off benchmark with framework language around it
+- a polished demo with no reusable environment contract
 
-async def main():
-    # Connect to a running Space (async context manager)
-    async with EchoEnv(base_url="https://openenv-echo-env.hf.space") as client:
-        # Reset the environment
-        result = await client.reset()
-        print(result.observation.echoed_message)  # "Echo environment ready!"
+Sec-OpenEnv is built to sit in the middle ground that actually compounds:
 
-        # Send messages
-        result = await client.step(EchoAction(message="Hello, World!"))
-        print(result.observation.echoed_message)  # "Hello, World!"
-        print(result.reward)  # 1.3 (based on message length)
+- realistic security workflows packaged as environments
+- a single registry that drives discovery, serving, and metadata
+- a clean CLI and Python API for demos, evaluation, and future extensions
+- lightweight but real multi-domain coverage out of the box
 
-asyncio.run(main())
-```
+The goal is not to be a weaker OpenEnv clone. The goal is to bring OpenEnv-style environment discipline to security workflows, where reproducibility, evidence gathering, and safe operational decisions actually matter.
 
-**Synchronous usage** is also supported via the `.sync()` wrapper:
+## What Ships Today
 
-```python
-from echo_env import EchoAction, EchoEnv
+- `cyber-vulnerability-triage`: web application security triage over suspicious HTTP requests, with deterministic grading and an expanded dataset
+- `log-anomaly`: operational detection workflow for log triage, context review, and response recommendation
 
-# Use .sync() for synchronous context manager
-with EchoEnv(base_url="https://openenv-echo-env.hf.space").sync() as client:
-    result = client.reset()
-    result = client.step(EchoAction(message="Hello, World!"))
-    print(result.observation.echoed_message)
-```
+Each environment includes:
 
-For a detailed quick start, check out the [docs page](https://meta-pytorch.org/OpenEnv/quickstart/).
-
-## OpenEnv on partner platforms:
-
-- [Lightning AI Studio](https://lightning.ai/environments?section=featured)
-- [TRL example](https://huggingface.co/docs/trl/openenv)
-- [Unsloth Google Colab](https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/OpenEnv_gpt_oss_(20B)_Reinforcement_Learning_2048_Game.ipynb)
-- [ART example](https://art.openpipe.ai/integrations/openenv-integration)
-- [Oumi example](https://github.com/oumi-ai/oumi/blob/main/notebooks/Oumi%20-%20OpenEnv%20GRPO%20with%20trl.ipynb)
-
-## Overview
-
-OpenEnv provides a standard for interacting with agentic execution environments via simple Gymnasium style APIs - `step()`, `reset()`, `state()`. Users of agentic execution environments can interact with the environment during RL training loops using these simple APIs.
-
-In addition to making it easier for researchers and RL framework writers, we also provide tools for environment creators making it easier for them to create richer environments and make them available over familiar protocols like HTTP and packaged using canonical technologies like docker. Environment creators can use the OpenEnv framework to create environments that are isolated, secure, and easy to deploy and use.
-
-The OpenEnv CLI (`openenv`) provides commands to initialize new environments and deploy them to Hugging Face Spaces.
-
-> ⚠️ **Early Development Warning** OpenEnv is currently in an experimental
-> stage. You should expect bugs, incomplete features, and APIs that may change
-> in future versions. The project welcomes bugfixes, but to make sure things are
-> well coordinated you should discuss any significant change before starting the
-> work. It's recommended that you signal your intention to contribute in the
-> issue tracker, either by filing a new issue or by claiming an existing one.
-
-### RFCs
-
-Below is a list of active and historical RFCs for OpenEnv. RFCs are proposals for major changes or features. Please review and contribute!
-
-- [RFC 001: Baseline API and Interface Specifications](https://github.com/meta-pytorch/OpenEnv/pull/26)
-- [RFC 002: Discoverability of environment tools by agents](https://github.com/meta-pytorch/OpenEnv/pull/32)
-- [RFC 003: Add MCP (Model Context Protocol) support](https://github.com/meta-pytorch/OpenEnv/pull/224)
-- [RFC 004: Add delayed rewards support for trajectory-based scoring](https://github.com/meta-pytorch/OpenEnv/pull/337)
-- [RFC 005: Agentic Harness Integration](https://github.com/meta-pytorch/OpenEnv/pull/387)
+- a dataset
+- typed observation and action models
+- an environment class
+- a registry entry
+- a FastAPI server entrypoint
+- a minimal baseline agent for evaluation
 
 ## Architecture
 
-### Component Overview
+```text
+                         +-----------------------------+
+                         |   sec-openenv CLI / API     |
+                         | list | info | serve | eval  |
+                         +-------------+---------------+
+                                       |
+                                       v
+                         +-----------------------------+
+                         |     Environment Registry    |
+                         | single source of truth for  |
+                         | metadata, entrypoints, app  |
+                         +------+------+---------------+
+                                |      |
+                +---------------+      +------------------+
+                |                                      |
+                v                                      v
+   +-------------------------------+      +-------------------------------+
+   | Cyber Vulnerability Triage    |      | Log Anomaly Investigation      |
+   | request -> evidence -> action |      | event -> context -> response   |
+   +---------------+---------------+      +---------------+---------------+
+                   |                                      |
+                   +------------------+-------------------+
+                                      |
+                                      v
+                     +-----------------------------------+
+                     | FastAPI Serving + Evaluation Loop |
+                     | /reset /step /tasks /benchmark    |
+                     +-----------------------------------+
+```
+
+Assets:
+
+- [Architecture diagram](docs/assets/architecture.svg)
+- [CLI screenshot](docs/assets/cli-screenshot.svg)
+- [API response example](docs/assets/api-response-example.json)
+
+## Repo Layout
 
 ```text
-┌─────────────────────────────────────────────────────────┐
-│                    Client Application                   │
-│  ┌────────────────┐              ┌──────────────────┐   │
-│  │  EchoEnv       │              │  CodingEnv       │   │
-│  │  (EnvClient)   │              │   (EnvClient)    │   │
-│  └────────┬───────┘              └────────┬─────────┘   │
-└───────────┼───────────────────────────────┼─────────────┘
-            │ WebSocket                     │ WebSocket
-            │ (reset, step, state)          │
-┌───────────▼───────────────────────────────▼─────────────┐
-│              Docker Containers (Isolated)               │
-│  ┌──────────────────────┐    ┌──────────────────────┐   │
-│  │ FastAPI Server       │    │ FastAPI Server       │   │
-│  │   EchoEnvironment    │    │ PythonCodeActEnv     │   │
-│  │ (Environment base)   │    │ (Environment base)   │   │
-│  └──────────────────────┘    └──────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
+src/sec_openenv/
+  core/           shared framework contracts and loaders
+  framework/      registry and environment discovery
+  environments/   bundled security environments
+  server/         reusable FastAPI app factory
+  evaluation/     run_episode() and multi-model evaluation
+
+env/              compatibility shims for the original benchmark surface
+server/           compatibility server entrypoints
+examples/         runnable demos and evaluation scripts
+tests/            environment, registry, and API contract checks
+docs/assets/      architecture and demo assets
 ```
 
-### Core Components
+## Demo Commands
 
-#### 1. Web Interface
+Install locally:
 
-OpenEnv includes a built-in web interface for interactive environment exploration and debugging. The web interface provides:
+```bash
+python -m pip install -e ".[dev]"
+```
 
-- **Two-Pane Layout**: HumanAgent interaction on the left, state observation on the right
-- **Real-time Updates**: WebSocket-based live updates without page refresh
-- **Dynamic Forms**: Automatically generated action forms based on environment Action types
-- **Action History**: Complete log of all actions taken and their results
+Optional OpenAI-compatible client for `evaluate_models` / LLM baselines:
 
-The web interface is **conditionally enabled** based on environment variables:
+```bash
+python -m pip install -e ".[llm]"
+```
 
-- **Local Development**: Disabled by default for lightweight development
-- **Manual Override**: Enable with `ENABLE_WEB_INTERFACE=true`
+Discover the framework:
 
-To use the web interface:
+```bash
+sec-openenv list
+sec-openenv info --environment cyber-vulnerability-triage
+sec-openenv info --environment log-anomaly
+```
+
+Run a local episode:
+
+```bash
+python examples/benchmark/run_single_episode.py
+```
+
+Run multi-model evaluation:
+
+```bash
+python examples/evaluate_multiple_models.py
+```
+
+Serve an environment:
+
+```bash
+sec-openenv serve --environment cyber-vulnerability-triage --port 8000
+sec-openenv serve --environment log-anomaly --port 8001
+```
+
+Probe the API:
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/benchmark
+curl -X POST http://localhost:8000/reset \
+  -H "Content-Type: application/json" \
+  -d '{"task":"hard","seed":2}'
+curl -X POST http://localhost:8000/step \
+  -H "Content-Type: application/json" \
+  -d '{"action_type":"inspect_payload"}'
+```
+
+## Real-World Use Case
+
+Imagine evaluating an agent that acts like an application security analyst:
+
+1. It receives a suspicious HTTP request from a shared queue.
+2. It inspects payloads, historical activity, and asset context.
+3. It submits a triage with vulnerability type, severity, and response action.
+4. The result is scored deterministically, so prompt changes and model upgrades can be compared cleanly.
+
+That same framework surface can host an email security workflow or a detection-engineering workflow without changing the CLI or evaluation loop.
+
+## Comparison
+
+Compared with a typical security benchmark repo:
+
+- Sec-OpenEnv has multiple environments under one contract, not one benchmark plus scaffolding.
+- Registry metadata powers `list`, `info`, and `serve`, so serving is not hardcoded to one app.
+- Evaluation is reusable across environments through `run_episode()` and `evaluate_models()`.
+- The repo ships CI, contribution docs, roadmap, changelog, and visual assets to feel maintainable, not disposable.
+
+Compared with a typical polished demo repo:
+
+- environments are deterministic and testable
+- the API surface is stable and scriptable
+- new domains can be added without rewriting the framework layer
+
+## Python API
 
 ```python
-from openenv.core.env_server import create_web_interface_app
-from your_env.models import YourAction, YourObservation
-from your_env.server.your_environment import YourEnvironment
+from sec_openenv import run_episode, evaluate_models
 
-env = YourEnvironment()
-app = create_web_interface_app(env, YourAction, YourObservation)
+trace = run_episode("cyber-vulnerability-triage", task="hard", seed=2)
+print(trace.score, trace.steps)
+
+results = evaluate_models(
+    "cyber-vulnerability-triage",
+    ["gpt-4o-mini", "gpt-4.1-mini"],
+    task="hard",
+    episodes=2,
+)
+print(results)
 ```
 
-When enabled, open `http://localhost:8000/web` in your browser to interact with the environment.
+## Extending The Framework
 
-#### 2. Environment (Server-Side)
+To add a new environment:
 
-Base class for implementing environment logic:
+1. Create a package under `src/sec_openenv/environments/<your_env>/`.
+2. Add typed models, a dataset, an environment class, a baseline agent, and a server module.
+3. Register it in `src/sec_openenv/framework/registry.py`.
+4. Add one example and one smoke test.
 
-- **`reset()`**: Initialize a new episode, returns initial `Observation`
-- **`step(action)`**: Execute an `Action`, returns resulting `Observation`
-- **`state()`**: Access episode metadata (`State` with episode_id, step_count, etc.)
+The registry is the single source of truth. If an environment is not in the registry, it is not part of the framework surface.
 
-#### 3. EnvClient (Client-Side)
+## Ecosystem Signals
 
-Base class for environment communication:
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [ROADMAP.md](ROADMAP.md)
+- [CHANGELOG.md](CHANGELOG.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/extensibility.md](docs/extensibility.md)
 
-- **Async by default**: Use `async with` and `await` for all operations
-- **Sync wrapper**: Call `.sync()` to get a `SyncEnvClient` for synchronous usage
-- Handles WebSocket connections to environment server
-- Contains a utility to spin up a docker container locally for the corresponding environment
-- Type-safe action/observation parsing
-
-#### 4. Container Providers
-
-Manage container deployment:
-
-- `LocalDockerProvider`: Run containers on local Docker daemon
-- `KubernetesProvider`: Deploy to K8s clusters (future)
-
-#### 5. Models
-
-Type-safe data structures:
-
-- `Action`: Base class for environment actions
-- `Observation`: Base class for environment observations
-- `State`: Episode state tracking
-- `StepResult`: Combines observation, reward, done flag
-
-## Project Structure
-
-### For Environment Creators
-
-Use the CLI to quickly scaffold a new environment:
+## Validation
 
 ```bash
-openenv init my_env
-```
-
-This creates the following structure:
-
-```text
-my_env/
-├── .dockerignore        # Docker build exclusions
-├── __init__.py          # Export YourAction, YourObservation, YourEnv
-├── models.py            # Define Action, Observation, State dataclasses
-├── client.py            # Implement YourEnv(EnvClient)
-├── README.md            # Document your environment
-├── openenv.yaml         # Environment manifest
-├── pyproject.toml       # Dependencies and package configuration
-├── outputs/             # Runtime outputs (logs, evals) - gitignored
-│   ├── logs/
-│   └── evals/
-└── server/
-    ├── your_environment.py  # Implement YourEnvironment(Environment)
-    ├── app.py               # Create FastAPI app
-    ├── requirements.txt     # Dependencies for Docker (can be generated)
-    └── Dockerfile           # Define container image
-```
-
-#### Dependency Management
-
-OpenEnv uses `pyproject.toml` as the primary dependency specification:
-
-- **Environment-level `pyproject.toml`**: Each environment defines its own dependencies
-- **Root-level `pyproject.toml`**: Contains shared core dependencies (fastapi, pydantic, uvicorn)
-- **Server `requirements.txt`**: Can be auto-generated from `pyproject.toml` for Docker builds
-
-**Development Workflow:**
-
-```bash
-# Install environment in editable mode
-cd my_env
-pip install -e .
-
-# Or using uv (faster)
-uv pip install -e .
-
-# Run server locally without Docker
-uv run server --host 0.0.0.0 --port 8000
-```
-
-**Benefits:**
-
-- ✅ **Client-side extensions**: Modify client classes locally without repo changes
-- ✅ **Better dependency management**: Clear separation between environments
-- ✅ **Flexible workflows**: Use pip, uv, or Docker for different scenarios
-- ✅ **CI/CD ready**: Automated dependency generation and validation
-
-See [`envs/README.md`](envs/README.md) for a complete guide on building environments.
-
-### For Environment Users
-
-To use an environment:
-
-1. Install the client: `pip install git+https://huggingface.co/spaces/openenv/echo-env`
-2. Import: `from echo_env import EchoAction, EchoEnv`
-3. Use async (recommended) or sync API:
-
-**Async (recommended):**
-
-```python
-async with EchoEnv(base_url="...") as client:
-    result = await client.reset()
-    result = await client.step(action)
-```
-
-**Sync (via `.sync()` wrapper):**
-
-```python
-with EchoEnv(base_url="...").sync() as client:
-    result = client.reset()
-    result = client.step(action)
-```
-
-See example scripts in `examples/` directory.
-
-## CLI Commands
-
-The OpenEnv CLI provides commands to manage environments:
-
-- **`openenv init <env_name>`** - Initialize a new environment from template
-- **`openenv push [--repo-id <repo>] [--private]`** - Deploy environment to Hugging Face Spaces
-
-### Quick Start
-
-```bash
-# Create a new environment
-openenv init my_game_env
-
-# Deploy to Hugging Face (will prompt for login if needed)
-cd my_game_env
-openenv push
-```
-
-For detailed options: `openenv init --help` and `openenv push --help`.
-
-## Design Principles
-
-1. **Separation of Concerns**: Clear client-server boundaries
-2. **Type Safety**: Strongly-typed actions, observations, and state
-3. **Container Isolation**: Each environment runs in its own container
-4. **Simple APIs**: Minimal, intuitive interfaces
-
-## Development
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/meta-pytorch/OpenEnv.git
-cd OpenEnv
-
-# Install core package in editable mode
-pip install -e .
-# Or using uv (faster)
-uv pip install -e .
-```
-
-### Running Tests
-
-OpenEnv uses a modular dependency structure: the core package is minimal, and each environment has its own dependencies. This means some tests require environment-specific packages.
-
-```bash
-# Install pytest (required for running tests)
-uv pip install pytest
-
-# Run all tests (skips tests requiring uninstalled dependencies)
-PYTHONPATH=src:envs uv run pytest tests/ -v --tb=short
-
-# Run a specific test file
-PYTHONPATH=src:envs uv run pytest tests/envs/test_echo_environment.py -v
-```
-
-**To run environment-specific tests**, install that environment's dependencies:
-
-```bash
-# Example: Install coding_env with dev dependencies (includes smolagents + pytest)
-uv pip install -e "envs/coding_env[dev]"
-
-# Then run coding_env tests
-PYTHONPATH=src:envs uv run pytest tests/envs/test_python_codeact_rewards.py -v
-```
-
-Tests will be automatically skipped if their required dependencies aren't installed.
-
-## Requirements
-
-- Python 3.10+
-- Docker Desktop or Docker Engine
-- FastAPI >= 0.104.0
-- Uvicorn >= 0.24.0
-- Requests >= 2.25.0
-- Environment-specific dependencies (e.g., smolagents for coding_env)
-
-## Supported RL Tools
-
-The goal of this project is to support a broad set of open and closed tools to help standardize the agentic RL community. If you have a project that supports OpenEnv environments, please put up a PR to add your tool name along with a link to your documentation.
-
-### torchforge
-
-See GRPO BlackJack training example: [`examples/grpo_blackjack/`](examples/grpo_blackjack/)
-
-### TRL
-
-See the [TRL example](https://huggingface.co/docs/trl/openenv) on how to integrate OpenEnv environments with GRPO training.
-
-### Unsloth
-
-See the 2048 game example based on gpt-oss: [Colab notebook](https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/OpenEnv_gpt_oss_(20B)_Reinforcement_Learning_2048_Game.ipynb)
-
-### SkyRL
-
-See the [SkyRL example](https://skyrl.readthedocs.io/en/latest/examples/openenv.html) on how to train on OpenEnv environments with SkyRL.
-
-### ART
-
-See the [ART example](https://art.openpipe.ai/integrations/openenv-integration) on how OpenEnv environments can be used to train models with ART.
-
-### Oumi
-
-See the [Oumi example](https://github.com/oumi-ai/oumi/blob/main/notebooks/Oumi%20-%20OpenEnv%20GRPO%20with%20trl.ipynb) on how OpenEnv environments can be used to train models with Oumi.
-
-## Example Environments
-
-| Environment | Description |
-|---|---|
-| [Echo Environment](envs/echo_env/README.md) | Echoes back messages with metadata. Ideal for testing HTTP server infrastructure, learning framework basics, and verifying container deployment. |
-| [Coding Environment](envs/coding_env/README.md) | Sandboxed Python code execution via smolagents. Captures stdout/stderr/exit codes, supports persistent episode context, and provides detailed error handling. |
-| [Chess Environment](envs/chess_env/README.md) | Chess RL environment with configurable opponents and full rules support. |
-| [Atari Environment](envs/atari_env/README.md) | Classic Arcade Learning Environment tasks for RL benchmarking. |
-| [FinRL Environment](envs/finrl_env/README.md) | Financial market simulations for algorithmic trading experiments. |
-
-> Browse the full catalog of community environments at [meta-pytorch.org/OpenEnv/environments](https://meta-pytorch.org/OpenEnv/environments/).
-
-## Community Support & Acknowledgments
-
-This is an open and community-centric project. If you would like to add your name here, please put up a pull request and tag @jspisak for review. Ty!!
-
-Supporters include: Meta-PyTorch, Hugging Face, [Scaler AI Labs](https://scalerailabs.com), [Patronus AI](https://patronus.ai), [Surge AI](https://surgehq.ai), [LastMile AI](https://www.lastmileai.dev), Unsloth AI, Reflection AI, vLLM, SkyRL (UC-Berkeley), LightningAI, Axolotl AI, Stanford Scaling Intelligence Lab, Mithril, [OpenMined](https://openmined.org/), [Fleet AI](https://fleetai.com), [Halluminate](https://halluminate.ai/), [Turing](https://www.turing.com/), [Scale AI](https://scale.com/) ..
-
-And we'd also like to acknowledge the team at Farama Foundation as the OpenEnv API was heavily inspired by the work you all have done on Gymnasium. Cheers!
-
-## License
-
-BSD 3-Clause License (see [LICENSE](./LICENSE) file)
+pytest
