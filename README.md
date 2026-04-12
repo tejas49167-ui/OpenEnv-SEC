@@ -251,7 +251,7 @@ The server exposes the standard benchmark endpoints including `/health`, `/reset
   title   = {Sec-OpenEnv: A Deterministic Cyber Vulnerability Triage Environment},
   author  = {Tejas},
   year    = {2026},
-  url     = {https://github.com/tejas/sec-openenv},
+  url     = {[https://github.com/tejas49167-ui/OpenEnv-SEC]},
   note    = {OpenEnv-compatible benchmark for multi-step cyber triage}
 }
 ```
